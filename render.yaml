@@ -4,8 +4,10 @@ services:
     runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    notFoundPage: /index.html
     routes:
+      # Fallback de SPA: Render sólo aplica la regla cuando no existe un
+      # archivo en la ruta pedida, así que /assets/* y /logo.png se sirven
+      # tal cual y /pipeline o /inventario devuelven index.html.
       - type: rewrite
         source: /*
         destination: /index.html

@@ -75,14 +75,25 @@ El repositorio incluye `render.yaml`, así que hay dos caminos.
 
 `render.yaml` ya define lo necesario:
 
-- `runtime: static`
+- `runtime: static` con `type: web` (la forma que pide Render para sitios
+  estáticos)
 - `buildCommand: npm install && npm run build`
 - `staticPublishPath: ./dist`
-- `notFoundPage: /index.html` y un *rewrite* de `/*` → `/index.html`
+- un *rewrite* de `/*` → `/index.html`
+- `Cache-Control: immutable` para `/assets/*`
 
 Ese rewrite es lo que evita el error 404 al recargar en una ruta interna como
 `/pipeline` o `/inventario`: la app es una SPA y Render tiene que devolverle
 el `index.html` en vez de un 404.
+
+Render **sólo aplica la regla cuando no existe un archivo en la ruta pedida**,
+así que `/assets/index-xxxx.js` y `/logo.png` se sirven tal cual y el rewrite
+no los intercepta.
+
+> ⚠️ `notFoundPage` **no** es una clave válida del esquema de Render (el
+> `staticService` es `additionalProperties: false`). Render rechaza el
+> blueprint si aparece. El fallback de SPA se resuelve únicamente con el
+> `rewrite` de arriba.
 
 ### Opción B — Manual
 

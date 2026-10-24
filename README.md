@@ -1,30 +1,44 @@
-# Palacio Instrumental — Workspace de Ventas
+# Palacio Instrumental — Workspace de Ventas + Tienda
 
-CRM interno para el equipo de ventas de **Palacio Instrumental**. Gestiona el
-pipeline de cotizaciones, la cartera de clientes, el inventario y el cotizador,
-y genera la cotización en PDF o por WhatsApp.
+Dos aplicaciones en una sola:
+
+- **La tienda** (`/tienda`) — lo que ve el cliente: catálogo completo, fichas
+  técnicas, carrito y cierre por WhatsApp.
+- **El workspace** (`/`) — lo que ve el equipo de ventas: pipeline de
+  cotizaciones, clientes, cotizador con PDF e inventario.
 
 Es una **aplicación de demostración**: los datos viven en el navegador
 (`localStorage`), con un catálogo, una cartera y un pipeline de ejemplo. No hay
 servidor ni base de datos.
 
-![Panel](docs/capturas/panel.png)
+![Panel del workspace](docs/capturas/panel.png)
 
 ---
 
-## Guion de demo (5 minutos)
+## Guion de demo
 
-Este es el recorrido sugerido para mostrarle el avance al dueño.
+### Parte 1 — La tienda (lo que ve el cliente)
 
 | # | Pantalla | Qué mostrar | Qué decir |
 |---|---|---|---|
-| 1 | **Panel** | Los cinco indicadores, el embudo con su % de conversión, el gráfico de 8 semanas y la lista **“Requiere atención”** | *“Aquí el equipo sabe en qué está. Las dos cotizaciones sin respuesta y el stock bajo salen solos, con su enlace para resolverlas.”* |
-| 2 | **Pipeline** | Arrastrar una tarjeta de “Negociando” a “Cerrada”. Con teclado: el botón **Mover** de la tarjeta | *“El embudo es el mismo para todos. Si no puedes arrastrar, el botón Mover hace lo mismo.”* |
-| 3 | **Cotizador** | Elegir cliente, moverse por el **diapasón** (el capo de latón cambia de traste al cambiar de familia), agregar 2–3 instrumentos, cambiar cantidad y descuento, elegir plan de 6 meses | *“La navegación por familias es un diapasón: cada familia es un traste. En la versión final cada familia de instrumento tendrá su propia ficha técnica."* |
-| 4 | **Ver como el cliente** | La cotización renderizada con el escudo, las especificaciones de cada equipo, el plan de pago y las condiciones | *“Esto es lo que recibe el cliente. No es un PDF frío: es una página que se puede mandar por WhatsApp.”* |
-| 5 | **PDF / WhatsApp** | Botón **PDF** (abre el documento con el escudo, la tabla, los totales y el plan de pago) y botón **WhatsApp** (arma el mensaje con el resumen y el link `wa.me`) | *“De la cotización al WhatsApp del cliente en un clic.”* |
-| 6 | **Inventario** | Ajustar existencias con **+ / −**, el filtro “Solo stock bajo” | *“El inventario y el cotizador están conectados: lo que se cotiza reserva stock.”* |
-| 7 | **Configuración** | Cambiar el WhatsApp, los horarios, el IVA, los meses de crédito, el envío gratis desde cierto monto | *“Acá se cambian los datos de la tienda. Hoy son de ejemplo; con los reales, todo se actualiza solo.”* |
+| 1 | **Portada** `/tienda` | El titular, la **lista de precios** que hace de póster y el panel **"Sin letra pequeña"** | *“Las dos tiendas de referencia no dicen ni una palabra de cuotas, garantía o envío en su portada. Nosotros sí: el cliente decide con todos los números a la vista.”* |
+| 2 | **Familias** | El **diapasón**: cada familia de instrumento es un traste y el capo de latón se desliza al cambiar de familia | *“La navegación por familias es un diapasón de verdad. Es el mismo lenguaje del instrumento.”* |
+| 3 | **Catálogo** `/tienda/catalogo` | Los 54 artículos con ficha: referencia, glifo de familia, dos especificaciones, disponibilidad y precio | *“Cada artículo muestra sus especificaciones reales. No es una foto con un precio: es la ficha.”* |
+| 4 | **Filtros** | Buscar por nombre, marca o referencia; filtrar por familia, marca y precio; "solo disponibles"; ordenar | *“El cliente encuentra lo que busca sin pedirle ayuda a nadie.”* |
+| 5 | **Ficha de producto** | La tabla de especificaciones completa, la disponibilidad, el selector de **plan de pago** y el total | *“Y antes de comprar, el cliente ya sabe cuánto va a pagar cada mes.”* |
+| 6 | **Carrito** `/tienda/carrito` | Agregar dos o tres artículos, cambiar cantidades, elegir el plan y ver el total con el envío calculado | *“El carrito calcula el envío y muestra el precio por cuota antes de que el cliente pregunte.”* |
+| 7 | **Cierre** | Botón **"Confirmar por WhatsApp"** | *“El pedido llega al asesor con los precios, el plan de pago y el envío ya resueltos. Así empieza la conversación con datos, no con '¿cuánto cuesta?'”* |
+
+### Parte 2 — El workspace (lo que ve el equipo)
+
+| # | Pantalla | Qué mostrar | Qué decir |
+|---|---|---|---|
+| 1 | **Panel** | 5 indicadores, el embudo con su % de conversión, el gráfico de 8 semanas y **"Requiere atención"** | *“Aquí el equipo sabe en qué está. Las cotizaciones sin respuesta y el stock bajo salen solos, con su enlace para resolverlas.”* |
+| 2 | **Pipeline** | Arrastrar una tarjeta de “Negociando” a “Cerrada”. Con teclado: el botón **Mover** de cada tarjeta | *“El embudo es el mismo para todos. Si no puedes arrastrar, el botón Mover hace lo mismo.”* |
+| 3 | **Cotizador** | Elegir cliente, moverse por el **diapasón**, agregar instrumentos, cambiar cantidad y descuento, plan de 6 meses, **PDF** y **WhatsApp** | *“De la cotización al WhatsApp del cliente en un clic. Y el PDF sale con el escudo y las condiciones.”* |
+| 4 | **Vista del cliente** `/cotizacion/:id` | La cotización renderizada como documento | *“Esto es lo que recibe el cliente. No es un PDF frío: es una página que se puede mandar por WhatsApp.”* |
+| 5 | **Inventario** | Ajustar existencias con **+ / −**, el filtro “solo stock bajo” | *“El inventario y el cotizador están conectados: lo que se cotiza reserva stock.”* |
+| 6 | **Configuración** | Cambiar el WhatsApp, los horarios, el IVA, los meses de crédito y el envío gratis desde cierto monto | *“Acá se cambian los datos de la tienda. Hoy son de ejemplo; con los reales, todo se actualiza solo.”* |
 
 Atajo útil: **⌘K / Ctrl+K** abre el buscador global (secciones, clientes,
 cotizaciones y productos).
@@ -33,14 +47,25 @@ cotizaciones y productos).
 
 ## Capturas
 
-| | |
+**La tienda**
+
+| Portada | Catálogo |
 |---|---|
-| **Cotizador** — diapasón, líneas y totales | **Pipeline** — tablero kanban |
-| ![Cotizador](docs/capturas/cotizador.png) | ![Pipeline](docs/capturas/pipeline.png) |
+| ![Portada](docs/capturas/tienda-portada.png) | ![Catálogo](docs/capturas/tienda-catalogo.png) |
 
-**Vista del cliente** (la superficie que sí vende):
+| Ficha de producto | Carrito |
+|---|---|
+| ![Producto](docs/capturas/tienda-producto.png) | ![Carrito](docs/capturas/tienda-carrito.png) |
 
-![Vista del cliente](docs/capturas/vista-cliente.png)
+**El workspace**
+
+| Panel | Pipeline |
+|---|---|
+| ![Panel](docs/capturas/panel.png) | ![Pipeline](docs/capturas/pipeline.png) |
+
+| Cotizador | Vista del cliente |
+|---|---|
+| ![Cotizador](docs/capturas/cotizador.png) | ![Vista del cliente](docs/capturas/vista-cliente.png) |
 
 ---
 
@@ -82,13 +107,11 @@ El repositorio incluye `render.yaml`, así que hay dos caminos.
 - un *rewrite* de `/*` → `/index.html`
 - `Cache-Control: immutable` para `/assets/*`
 
-Ese rewrite es lo que evita el error 404 al recargar en una ruta interna como
-`/pipeline` o `/inventario`: la app es una SPA y Render tiene que devolverle
-el `index.html` en vez de un 404.
-
-Render **sólo aplica la regla cuando no existe un archivo en la ruta pedida**,
-así que `/assets/index-xxxx.js` y `/logo.png` se sirven tal cual y el rewrite
-no los intercepta.
+El rewrite es lo que evita el error 404 al recargar en una ruta interna como
+`/pipeline`, `/inventario` o `/tienda/carrito`: la app es una SPA y Render
+tiene que devolverle el `index.html` en vez de un 404. Render **sólo aplica la
+regla cuando no existe un archivo en la ruta pedida**, así que `/assets/*` y
+`/logo.png` se sirven tal cual.
 
 > ⚠️ `notFoundPage` **no** es una clave válida del esquema de Render (el
 > `staticService` es `additionalProperties: false`). Render rechaza el
@@ -105,10 +128,29 @@ no los intercepta.
 
 Después de publicar, la URL queda en `https://<nombre>.onrender.com`.
 
-> **Nota:** si más adelante se quiere que los datos se compartan entredevices
-> (no solo dentro de un navegador), hay que reemplazar `zustand/persist` por una
-> API. La estructura de `src/store/crmStore.ts` está pensada para eso: las
-> acciones ya son las que un backend expondría.
+> **Nota:** si más adelante se quiere que los datos se compartan entre
+> dispositivos (no solo dentro de un navegador), hay que reemplazar
+> `zustand/persist` por una API. La estructura de `src/store/crmStore.ts` está
+> pensada para eso: las acciones ya son las que un backend expondría.
+
+---
+
+## Rutas
+
+| Ruta | Superficie | Contenido |
+|---|---|---|
+| `/tienda` | Cliente | Portada: hero, lista de precios, familias, destacados, transparencia |
+| `/tienda/catalogo` | Cliente | Catálogo con filtros, búsqueda y orden |
+| `/tienda/producto/:id` | Cliente | Ficha de producto con especificaciones y compra |
+| `/tienda/carrito` | Cliente | Carrito, totales, plan de pago y cierre por WhatsApp |
+| `/` | Equipo | Panel con indicadores y embudo |
+| `/pipeline` | Equipo | Tablero kanban de cotizaciones |
+| `/cotizador` | Equipo | Constructor de cotizaciones con PDF y WhatsApp |
+| `/cotizaciones` | Equipo | Historial de cotizaciones |
+| `/clientes` · `/clientes/:id` | Equipo | Cartera y ficha de cliente |
+| `/inventario` | Equipo | Existencias, precios y ajustes |
+| `/configuracion` | Equipo | Datos de la tienda y reinicio de la demo |
+| `/cotizacion/:id` | Cliente | La cotización renderizada como documento compartible |
 
 ---
 
@@ -123,10 +165,10 @@ red y consola) las dos tiendas de referencia:
 |---|---|---|
 | Stack | WordPress 7.1 + WooCommerce 11 + Elementor Pro + Swiper 8 | WordPress 6.8 + WooCommerce 10.3 + tema Audib + Slick + Slider Revolution |
 | Paleta | `#1B2A4B` / `#003D81` / `#1CA3C2` / gradiente cian→índigo | `#0058B8` + `#1A1A1A`, un solo azul |
-| Tipografía | Próxima Nova + Montserrat | DM Sans + “Audib Heading” |
+| Tipografía | Próxima Nova + Montserrat | DM Sans + "Audib Heading" |
 | Estructura | 13 tiles de categoría, 8 carruseles, hero en video | 7 carruseles, masonry, badges circulares |
-| Señales de confianza | **ninguna** | 4 badges genéricos (“Pago seguro”, “Envío Rápido”) |
-| Deuda técnica | slugs duplicados (`/accesorios/` vs `/accesorios-2/`), typos (`cauelas`, `violn`, `micrfono-usb`) | horarios contradictorios entre footer y “Sobre Nosotros”, categoría `Uncategorized` visible, menú demo del tema sin rebrand |
+| Señales de confianza | **ninguna** | 4 badges genéricos ("Pago seguro", "Envío Rápido") |
+| Deuda técnica | slugs duplicados (`/accesorios/` vs `/accesorios-2/`), typos (`cauelas`, `violn`, `micrfono-usb`) | horarios contradictorios entre footer y "Sobre Nosotros", categoría `Uncategorized` visible, menú demo del tema sin rebrand |
 
 Conclusión: **ambos son el mismo producto con distinto skin**. WooCommerce +
 azul + carruseles. Eso deja libre el terreno para un workspace que no se parezca
@@ -135,11 +177,11 @@ a ninguno de los dos.
 ### Dirección visual
 
 El logo de Palacio Instrumental (escudo de guitarra, tipografía serif, cintillo
-“Family Music Store”) es de herencia. La referencia que se tomó no es la
+"Family Music Store") es de herencia. La referencia que se tomó no es la
 tienda online sino la **serigrafía de equipo de audio** — Buchla, Moog, Teenage
 Engineering — traducida a un taller de luthier.
 
-- **Papel y tinta** — `#F4EFE5` papel, `#17130F` tinta, `#6E1F2C` oxblood,
+- **Paleta** — `#F4EFE5` papel, `#17130F` tinta, `#6E1F2C` oxblood,
   `#8A6A2E` latón, `#2F5D50` pino, `#A9661A` ámbar. Todo en `@theme` de
   Tailwind v4 (`src/index.css`).
 - **Tipografía** — **Fraunces** solo en el escudo y los números grandes;
@@ -148,8 +190,9 @@ Engineering — traducida a un taller de luthier.
 - **Firmas** — ① *El diapasón*: hairline de trastes con incrustaciones de punto,
   y un **capo de latón** que se desliza hasta la familia activa (es la única
   pieza que se mueve en toda la app). ② Regla con punto de latón como sistema
-  de divisores. ③ Cero gradientes decorativos, cero sombras en capas, cero
-  cuadrícula uniforme de tarjetas iguales.
+  de divisores. ③ Sin fotos de relleno: cada artículo se identifica con un
+  **glifo line-art** de su familia y su referencia, como en un catálogo
+  técnico.
 - **Radios casi planos** (2–8 px) y espaciado con escala fija.
 
 ### Accesibilidad
@@ -171,16 +214,19 @@ src/
 ├── index.css                  tokens de marca (@theme) + base
 ├── types/                     Producto, Cliente, Cotizacion, Etapa…
 ├── data/                      catálogo, clientes, cotizaciones, config
-├── store/crmStore.ts          zustand + persist (localStorage)
+├── store/
+│   ├── crmStore.ts            zustand + persist (clientes, cotizaciones, catálogo)
+│   └── cartStore.ts           zustand + persist (carrito de la tienda)
 ├── lib/
 │   ├── format.ts              moneda, fechas, teléfonos
 │   ├── analytics.ts           KPIs, embudo, semanas, "requiere atención"
 │   ├── whatsapp.ts            enlaces wa.me y mensajes
 │   └── pdf.ts                 PDF con jsPDF + autoTable (carga diferida)
 ├── components/
-│   ├── brand/                 Logo, Fretboard (el diapasón)
+│   ├── brand/                 Logo, Fretboard (el diapasón), InstrumentIcon
 │   ├── charts/                gráficos en CSS/SVG, sin librerías
 │   ├── layout/                AppShell, CommandPalette
+│   ├── tienda/                FichaProducto (la ficha de catálogo)
 │   └── ui/                    kit de componentes
 └── pages/
     ├── Panel.tsx              indicadores y resumen
@@ -191,7 +237,13 @@ src/
     ├── ClienteDetalle.tsx     ficha
     ├── Inventario.tsx         existencias
     ├── Configuracion.tsx      datos de la tienda
-    └── CotizacionPublica.tsx  vista que ve el cliente
+    ├── CotizacionPublica.tsx  vista que ve el cliente
+    └── tienda/
+        ├── TiendaLayout.tsx   cabecera, navegación, pie
+        ├── TiendaHome.tsx     portada
+        ├── TiendaCatalogo.tsx catálogo con filtros
+        ├── TiendaProducto.tsx ficha de producto
+        └── TiendaCarrito.tsx  carrito y cierre
 ```
 
 ## Stack
@@ -199,8 +251,8 @@ src/
 Vite 7 · React 19 · TypeScript · Tailwind CSS v4 · React Router 7 · Zustand 5 ·
 jsPDF + autoTable · lucide-react.
 
-Sin librerías de gráficos: los tres gráficos del Panel son CSS y SVG propios,
-para que el peso y el estilo queden bajo control.
+Sin librerías de gráficos: los tres gráficos del Panel y todas las barras son
+CSS y SVG propios, para que el peso y el estilo queden bajo control.
 
 ---
 
@@ -216,12 +268,13 @@ para que el peso y el estilo queden bajo control.
 **Son datos ficticios.** Para cargar el inventario real hay que reemplazar
 `src/data/catalogo.ts` (o exponerlo desde una API). Los datos de la tienda
 —WhatsApp, dirección, horarios, IVA, meses de crédito— se editan desde
-**Configuración** y se propagan a las cotizaciones, al PDF y a la vista del
-cliente.
+**Configuración** y se propagan a la tienda, al PDF y a la vista del cliente.
 
 ## Limitaciones conocidas
 
 - Los datos son locales al navegador: no se sincronizan entre dispositivos.
 - No hay autenticación; todas las secciones son accesibles.
+- El checkout es por WhatsApp a propósito: no hay pasarela de pago ni
+  facturación. Es lo que ya hacen la mayoría de tiendas de zona del país, y
+  evita simular un pago que no existe.
 - El PDF es un documento de demostración, sin valor fiscal.
-- No hay envío real de correo ni integración con el punto de venta.

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import {
   Boxes,
   Calculator,
@@ -8,6 +8,7 @@ import {
   Menu,
   Search,
   Settings,
+  Store,
   Users,
   Workflow,
   X,
@@ -196,6 +197,13 @@ export function AppShell({
             {acciones ? (
               <div className="flex shrink-0 items-center gap-2">{acciones}</div>
             ) : null}
+            <Link
+              to="/tienda"
+              className="label-tech hidden h-8 items-center gap-1.5 rounded-xs border border-rule-2 px-2.5 text-ink transition-colors hover:border-ink sm:inline-flex"
+            >
+              <Store className="size-3.5" aria-hidden />
+              Tienda
+            </Link>
           </div>
         </header>
         <main className="px-4 py-5 sm:px-6 sm:py-6">{children}</main>

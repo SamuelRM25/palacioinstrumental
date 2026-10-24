@@ -11,6 +11,11 @@ import ClienteDetalle from './pages/ClienteDetalle'
 import Inventario from './pages/Inventario'
 import Configuracion from './pages/Configuracion'
 import CotizacionPublica from './pages/CotizacionPublica'
+import { TiendaLayout } from './pages/tienda/TiendaLayout'
+import TiendaHome from './pages/tienda/TiendaHome'
+import TiendaCatalogo from './pages/tienda/TiendaCatalogo'
+import TiendaProducto from './pages/tienda/TiendaProducto'
+import TiendaCarrito from './pages/tienda/TiendaCarrito'
 
 const TITULOS: Record<string, { titulo: string; eyebrow: string }> = {
   '/': { titulo: 'Panel', eyebrow: 'Resumen del día' },
@@ -46,6 +51,14 @@ export default function App() {
       <Routes>
         {/* Superficie que ve el cliente: sin el chrome del CRM */}
         <Route path="/cotizacion/:id" element={<CotizacionPublica />} />
+
+        {/* Tienda pública */}
+        <Route path="/tienda" element={<TiendaLayout />}>
+          <Route index element={<TiendaHome />} />
+          <Route path="catalogo" element={<TiendaCatalogo />} />
+          <Route path="producto/:id" element={<TiendaProducto />} />
+          <Route path="carrito" element={<TiendaCarrito />} />
+        </Route>
 
         <Route element={<Workspace />}>
           <Route path="/" element={<Panel />} />

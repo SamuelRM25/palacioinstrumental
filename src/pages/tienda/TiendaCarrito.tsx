@@ -86,7 +86,7 @@ export default function TiendaCarrito() {
           accion={{
             etiqueta: 'Ver el catálogo',
             onClick: () => {
-              window.location.href = '/tienda/catalogo'
+              window.location.href = '/catalogo'
             },
           }}
         />
@@ -119,7 +119,7 @@ export default function TiendaCarrito() {
                 className="flex flex-wrap items-start gap-4 border-b border-rule py-4"
               >
                 <Link
-                  to={`/tienda/producto/${producto.id}`}
+                  to={`/producto/${producto.id}`}
                   className="flex size-14 shrink-0 items-center justify-center border border-rule bg-paper-2 text-ink-4 transition-colors hover:border-ink-3"
                 >
                   <InstrumentIcon categoria={producto.categoria} className="size-8" />
@@ -128,7 +128,7 @@ export default function TiendaCarrito() {
                 <div className="min-w-0 flex-1">
                   <p className="label-tech text-ink-4">{producto.marca}</p>
                   <p className="mt-0.5 text-[14px] leading-snug font-semibold text-ink">
-                    <Link to={`/tienda/producto/${producto.id}`} className="hover:underline hover:underline-offset-2">
+                    <Link to={`/producto/${producto.id}`} className="hover:underline hover:underline-offset-2">
                       {producto.nombre}
                     </Link>
                   </p>
@@ -288,7 +288,7 @@ export default function TiendaCarrito() {
           </div>
 
           <Link
-            to="/tienda/catalogo"
+            to="/catalogo"
             className="label-tech mt-4 inline-flex items-center gap-1.5 text-ink-3 transition-colors hover:text-oxblood"
           >
             ← Seguir comprando

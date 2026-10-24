@@ -64,7 +64,7 @@ export default function TiendaHome() {
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Button variante="primary" onClick={() => navegar('/tienda/catalogo')}>
+              <Button variante="primary" onClick={() => navegar('/catalogo')}>
                 Ver catálogo
                 <ArrowRight className="size-3.5" aria-hidden />
               </Button>
@@ -129,7 +129,7 @@ export default function TiendaHome() {
               <div className="flex items-center justify-between border-t border-ink bg-ink px-4 py-2.5">
                 <span className="label-tech text-paper-3">Precio en quetzales</span>
                 <Link
-                  to="/tienda/catalogo"
+                  to="/catalogo"
                   className="label-tech text-brass-hi hover:underline"
                 >
                   Ver los {productos.length} →
@@ -153,7 +153,7 @@ export default function TiendaHome() {
               </h2>
             </div>
             <Link
-              to="/tienda/catalogo"
+              to="/catalogo"
               className="label-tech inline-flex items-center gap-1 text-oxblood transition-colors hover:text-oxblood-hi"
             >
               Ver todo el catálogo
@@ -194,7 +194,7 @@ export default function TiendaHome() {
                     </div>
                   </div>
                   <Link
-                    to={`/tienda/catalogo?categoria=${familiaActual.id}`}
+                    to={`/catalogo?categoria=${familiaActual.id}`}
                     className="label-tech inline-flex h-8 items-center gap-1.5 rounded-xs bg-oxblood px-3 text-paper transition-colors hover:bg-oxblood-hi"
                   >
                     Ver {familiaActual.cantidad} artículos
@@ -243,7 +243,7 @@ export default function TiendaHome() {
               </h2>
             </div>
             <Link
-              to="/tienda/catalogo"
+              to="/catalogo"
               className="label-tech inline-flex items-center gap-1 text-oxblood transition-colors hover:text-oxblood-hi"
             >
               Ver los {productos.length} artículos

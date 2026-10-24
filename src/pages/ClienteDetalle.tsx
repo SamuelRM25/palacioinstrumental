@@ -38,7 +38,7 @@ export default function ClienteDetalle() {
       <EmptyState
         titulo="Cliente no encontrado"
         descripcion="Puede que se haya eliminado de la cartera."
-        accion={{ etiqueta: 'Volver a la cartera', onClick: () => navegar('/clientes') }}
+        accion={{ etiqueta: 'Volver a la cartera', onClick: () => navegar('/crm/clientes') }}
       />
     )
   }
@@ -46,7 +46,7 @@ export default function ClienteDetalle() {
   return (
     <>
       <Link
-        to="/clientes"
+        to="/crm/clientes"
         className="label-tech mb-3 inline-flex items-center gap-1.5 text-ink-3 transition-colors hover:text-ink"
       >
         <ArrowLeft className="size-3" aria-hidden />
@@ -188,7 +188,7 @@ export default function ClienteDetalle() {
             </CardBody>
           </Card>
 
-          <Button variante="primary" onClick={() => navegar('/cotizador')}>
+          <Button variante="primary" onClick={() => navegar('/crm/cotizador')}>
             Cotizar a este cliente
           </Button>
         </aside>

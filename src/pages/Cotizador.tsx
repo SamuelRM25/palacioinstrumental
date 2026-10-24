@@ -538,7 +538,7 @@ export default function Cotizador() {
               variante="primary"
               onClick={() => {
                 const q = guardar()
-                if (q) navegar(`/pipeline?cotizacion=${q.id}`)
+                if (q) navegar(`/crm/pipeline?cotizacion=${q.id}`)
               }}
               disabled={!puedeGuardar}
             >

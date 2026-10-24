@@ -2,9 +2,9 @@
 
 Dos aplicaciones en una sola:
 
-- **La tienda** (`/tienda`) — lo que ve el cliente: catálogo completo, fichas
+- **La tienda** (`/`) — lo que ve el cliente: catálogo completo, fichas
   técnicas, carrito y cierre por WhatsApp.
-- **El workspace** (`/`) — lo que ve el equipo de ventas: pipeline de
+- **El workspace** (`/crm`) — lo que ve el equipo de ventas: pipeline de
   cotizaciones, clientes, cotizador con PDF e inventario.
 
 Es una **aplicación de demostración**: los datos viven en el navegador
@@ -21,15 +21,18 @@ servidor ni base de datos.
 
 | # | Pantalla | Qué mostrar | Qué decir |
 |---|---|---|---|
-| 1 | **Portada** `/tienda` | El titular, la **lista de precios** que hace de póster y el panel **"Sin letra pequeña"** | *“Las dos tiendas de referencia no dicen ni una palabra de cuotas, garantía o envío en su portada. Nosotros sí: el cliente decide con todos los números a la vista.”* |
+| 1 | **Portada** `/` | El titular, la **lista de precios** que hace de póster y el panel **"Sin letra pequeña"** | *“Las dos tiendas de referencia no dicen ni una palabra de cuotas, garantía o envío en su portada. Nosotros sí: el cliente decide con todos los números a la vista.”* |
 | 2 | **Familias** | El **diapasón**: cada familia de instrumento es un traste y el capo de latón se desliza al cambiar de familia | *“La navegación por familias es un diapasón de verdad. Es el mismo lenguaje del instrumento.”* |
-| 3 | **Catálogo** `/tienda/catalogo` | Los 54 artículos con ficha: referencia, glifo de familia, dos especificaciones, disponibilidad y precio | *“Cada artículo muestra sus especificaciones reales. No es una foto con un precio: es la ficha.”* |
+| 3 | **Catálogo** `/catalogo` | Los 54 artículos con ficha: referencia, glifo de familia, dos especificaciones, disponibilidad y precio | *“Cada artículo muestra sus especificaciones reales. No es una foto con un precio: es la ficha.”* |
 | 4 | **Filtros** | Buscar por nombre, marca o referencia; filtrar por familia, marca y precio; "solo disponibles"; ordenar | *“El cliente encuentra lo que busca sin pedirle ayuda a nadie.”* |
 | 5 | **Ficha de producto** | La tabla de especificaciones completa, la disponibilidad, el selector de **plan de pago** y el total | *“Y antes de comprar, el cliente ya sabe cuánto va a pagar cada mes.”* |
-| 6 | **Carrito** `/tienda/carrito` | Agregar dos o tres artículos, cambiar cantidades, elegir el plan y ver el total con el envío calculado | *“El carrito calcula el envío y muestra el precio por cuota antes de que el cliente pregunte.”* |
+| 6 | **Carrito** `/carrito` | Agregar dos o tres artículos, cambiar cantidades, elegir el plan y ver el total con el envío calculado | *“El carrito calcula el envío y muestra el precio por cuota antes de que el cliente pregunte.”* |
 | 7 | **Cierre** | Botón **"Confirmar por WhatsApp"** | *“El pedido llega al asesor con los precios, el plan de pago y el envío ya resueltos. Así empieza la conversación con datos, no con '¿cuánto cuesta?'”* |
 
 ### Parte 2 — El workspace (lo que ve el equipo)
+
+Entra por **`/crm`** (el botón **TIENDA** de la barra superior, o el enlace
+*Workspace de ventas* del pie de la tienda, te devuelven a la tienda pública).
 
 | # | Pantalla | Qué mostrar | Qué decir |
 |---|---|---|---|
@@ -108,7 +111,7 @@ El repositorio incluye `render.yaml`, así que hay dos caminos.
 - `Cache-Control: immutable` para `/assets/*`
 
 El rewrite es lo que evita el error 404 al recargar en una ruta interna como
-`/pipeline`, `/inventario` o `/tienda/carrito`: la app es una SPA y Render
+`/crm/pipeline`, `/crm/inventario` o `/carrito`: la app es una SPA y Render
 tiene que devolverle el `index.html` en vez de un 404. Render **sólo aplica la
 regla cuando no existe un archivo en la ruta pedida**, así que `/assets/*` y
 `/logo.png` se sirven tal cual.
@@ -139,18 +142,23 @@ Después de publicar, la URL queda en `https://<nombre>.onrender.com`.
 
 | Ruta | Superficie | Contenido |
 |---|---|---|
-| `/tienda` | Cliente | Portada: hero, lista de precios, familias, destacados, transparencia |
-| `/tienda/catalogo` | Cliente | Catálogo con filtros, búsqueda y orden |
-| `/tienda/producto/:id` | Cliente | Ficha de producto con especificaciones y compra |
-| `/tienda/carrito` | Cliente | Carrito, totales, plan de pago y cierre por WhatsApp |
-| `/` | Equipo | Panel con indicadores y embudo |
-| `/pipeline` | Equipo | Tablero kanban de cotizaciones |
-| `/cotizador` | Equipo | Constructor de cotizaciones con PDF y WhatsApp |
-| `/cotizaciones` | Equipo | Historial de cotizaciones |
-| `/clientes` · `/clientes/:id` | Equipo | Cartera y ficha de cliente |
-| `/inventario` | Equipo | Existencias, precios y ajustes |
-| `/configuracion` | Equipo | Datos de la tienda y reinicio de la demo |
+| `/` | Cliente | Portada: hero, lista de precios, familias, destacados, transparencia |
+| `/catalogo` | Cliente | Catálogo con filtros, búsqueda y orden |
+| `/producto/:id` | Cliente | Ficha de producto con especificaciones y compra |
+| `/carrito` | Cliente | Carrito, totales, plan de pago y cierre por WhatsApp |
 | `/cotizacion/:id` | Cliente | La cotización renderizada como documento compartible |
+| `/crm` | Equipo | Panel con indicadores y embudo |
+| `/crm/pipeline` | Equipo | Tablero kanban de cotizaciones |
+| `/crm/cotizador` | Equipo | Constructor de cotizaciones con PDF y WhatsApp |
+| `/crm/cotizaciones` | Equipo | Historial de cotizaciones |
+| `/crm/clientes` · `/crm/clientes/:id` | Equipo | Cartera y ficha de cliente |
+| `/crm/inventario` | Equipo | Existencias, precios y ajustes |
+| `/crm/configuracion` | Equipo | Datos de la tienda y reinicio de la demo |
+
+Las rutas viejas del workspace (`/pipeline`, `/cotizador`, `/cotizaciones`,
+`/clientes`, `/inventario`, `/configuracion`) y de la tienda (`/tienda…`)
+siguen sirviendo el mismo contenido en su URL original, para que ningún enlace
+guardado se rompa.
 
 ---
 

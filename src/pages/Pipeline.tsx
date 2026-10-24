@@ -181,7 +181,7 @@ export default function Pipeline() {
           <span className="label-mono text-ink-4">
             {filtradas.length} de {cotizaciones.length}
           </span>
-          <Button variante="primary" onClick={() => navegar('/cotizador')}>
+          <Button variante="primary" onClick={() => navegar('/crm/cotizador')}>
             Nueva cotización
           </Button>
         </div>

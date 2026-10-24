@@ -48,7 +48,7 @@ export function FichaProducto({ producto, onAgregar, pasivo }: Props) {
       <div className="flex flex-1 flex-col px-3 py-3">
         <p className="label-tech text-ink-4">{producto.marca}</p>
         <h3 className="mt-1 text-[14px] leading-snug font-semibold text-ink">
-          <Link to={`/tienda/producto/${producto.id}`} className="hover:underline hover:underline-offset-2">
+          <Link to={`/producto/${producto.id}`} className="hover:underline hover:underline-offset-2">
             {producto.nombre}
           </Link>
         </h3>
@@ -78,7 +78,7 @@ export function FichaProducto({ producto, onAgregar, pasivo }: Props) {
           </button>
         ) : (
           <Link
-            to={`/tienda/producto/${producto.id}`}
+            to={`/producto/${producto.id}`}
             className="label-tech rounded-xs border border-rule-2 px-2.5 py-1 text-ink-3 transition-colors duration-150 hover:border-ink hover:text-ink"
           >
             {agotado ? 'Ver ficha' : 'Ver ficha'}

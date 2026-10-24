@@ -133,7 +133,7 @@ export default function Clientes() {
           columnas={columnas}
           filas={filas}
           claveFila={(c) => c.id}
-          onFilaClick={(c) => navegar(`/clientes/${c.id}`)}
+          onFilaClick={(c) => navegar(`/crm/clientes/${c.id}`)}
           vacio={
             <EmptyState
               titulo="Sin clientes en la cartera"
@@ -147,7 +147,7 @@ export default function Clientes() {
         <p className="label-mono text-ink-4">
           {filas.length} cliente{filas.length === 1 ? '' : 's'}
         </p>
-        <Button variante="secondary" onClick={() => navegar('/cotizador')}>
+        <Button variante="secondary" onClick={() => navegar('/crm/cotizador')}>
           Ir al cotizador
         </Button>
       </div>

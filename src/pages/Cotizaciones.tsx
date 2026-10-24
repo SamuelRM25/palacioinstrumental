@@ -111,7 +111,7 @@ export default function Cotizaciones() {
           </Select>
         </div>
         <div className="ml-auto">
-          <Button variante="primary" onClick={() => navegar('/cotizador')}>
+          <Button variante="primary" onClick={() => navegar('/crm/cotizador')}>
             Nueva cotización
           </Button>
         </div>
@@ -122,7 +122,7 @@ export default function Cotizaciones() {
           columnas={columnas}
           filas={filas}
           claveFila={(c) => c.id}
-          onFilaClick={(c) => navegar(`/pipeline?cotizacion=${c.id}`)}
+          onFilaClick={(c) => navegar(`/crm/pipeline?cotizacion=${c.id}`)}
           vacio={
             <EmptyState
               titulo="Sin cotizaciones que coincidan"

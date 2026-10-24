@@ -27,13 +27,13 @@ interface Enlace {
 }
 
 const ENLACES: Enlace[] = [
-  { to: '/', etiqueta: 'Panel', icono: <Gauge className="size-4" />, exacto: true },
-  { to: '/pipeline', etiqueta: 'Pipeline', icono: <Workflow className="size-4" /> },
-  { to: '/cotizador', etiqueta: 'Cotizador', icono: <Calculator className="size-4" /> },
-  { to: '/cotizaciones', etiqueta: 'Cotizaciones', icono: <FileText className="size-4" /> },
-  { to: '/clientes', etiqueta: 'Clientes', icono: <Users className="size-4" /> },
-  { to: '/inventario', etiqueta: 'Inventario', icono: <Boxes className="size-4" /> },
-  { to: '/configuracion', etiqueta: 'Configuración', icono: <Settings className="size-4" /> },
+  { to: '/crm', etiqueta: 'Panel', icono: <Gauge className="size-4" />, exacto: true },
+  { to: '/crm/pipeline', etiqueta: 'Pipeline', icono: <Workflow className="size-4" /> },
+  { to: '/crm/cotizador', etiqueta: 'Cotizador', icono: <Calculator className="size-4" /> },
+  { to: '/crm/cotizaciones', etiqueta: 'Cotizaciones', icono: <FileText className="size-4" /> },
+  { to: '/crm/clientes', etiqueta: 'Clientes', icono: <Users className="size-4" /> },
+  { to: '/crm/inventario', etiqueta: 'Inventario', icono: <Boxes className="size-4" /> },
+  { to: '/crm/configuracion', etiqueta: 'Configuración', icono: <Settings className="size-4" /> },
 ]
 
 function NavItems({ onNavegar }: { onNavegar?: () => void }) {
@@ -198,7 +198,7 @@ export function AppShell({
               <div className="flex shrink-0 items-center gap-2">{acciones}</div>
             ) : null}
             <Link
-              to="/tienda"
+              to="/"
               className="label-tech hidden h-8 items-center gap-1.5 rounded-xs border border-rule-2 px-2.5 text-ink transition-colors hover:border-ink sm:inline-flex"
             >
               <Store className="size-3.5" aria-hidden />

@@ -73,7 +73,7 @@ export default function Panel() {
             )}
           </p>
         </div>
-        <Button variante="primary" onClick={() => navegar('/cotizador')}>
+        <Button variante="primary" onClick={() => navegar('/crm/cotizador')}>
           Nueva cotización
         </Button>
       </div>
@@ -125,7 +125,7 @@ export default function Panel() {
               descripcion="Barra clara: monto total de la semana. Barra sólida: monto ya cerrado."
               acciones={
                 <Link
-                  to="/pipeline"
+                  to="/crm/pipeline"
                   className="label-tech inline-flex items-center gap-1 text-oxblood transition-colors hover:text-oxblood-hi"
                 >
                   Ver pipeline
@@ -248,7 +248,7 @@ export default function Panel() {
               {atencion.length > 7 ? (
                 <div className="border-t border-rule px-4 py-2">
                   <Link
-                    to="/pipeline"
+                    to="/crm/pipeline"
                     className="label-tech inline-flex items-center gap-1 text-oxblood transition-colors hover:text-oxblood-hi"
                   >
                     Revisar las {atencion.length} pendientes
@@ -295,7 +295,7 @@ export default function Panel() {
         <Punto tono="oxblood" />
         <p className="text-[12px] text-ink-3">
           Cifras de demostración. El equipo puede editarlas desde{' '}
-          <Link to="/configuracion" className="text-oxblood underline underline-offset-2">
+          <Link to="/crm/configuracion" className="text-oxblood underline underline-offset-2">
             Configuración
           </Link>
           .

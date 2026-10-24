@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calculator, Search, User, FileText, Package, CornerDownLeft } from 'lucide-react'
+import { Calculator, Search, User, FileText, Package, CornerDownLeft, Store } from 'lucide-react'
 import { useCrm } from '../../store/crmStore'
 import { moneda } from '../../lib/format'
 
@@ -46,6 +46,13 @@ export function CommandPalette({ abierto, onCerrar }: Props) {
         titulo: 'Panel',
         grupo: 'Ir a',
         icono: <Search className="size-3.5" />,
+        ejecutar: () => navegar('/crm'),
+      },
+      {
+        id: 'nav-tienda',
+        titulo: 'Ver la tienda pública',
+        grupo: 'Ir a',
+        icono: <Store className="size-3.5" />,
         ejecutar: () => navegar('/'),
       },
       {
@@ -53,42 +60,42 @@ export function CommandPalette({ abierto, onCerrar }: Props) {
         titulo: 'Pipeline de cotizaciones',
         grupo: 'Ir a',
         icono: <Search className="size-3.5" />,
-        ejecutar: () => navegar('/pipeline'),
+        ejecutar: () => navegar('/crm/pipeline'),
       },
       {
         id: 'nav-cotizador',
         titulo: 'Cotizador',
         grupo: 'Ir a',
         icono: <Calculator className="size-3.5" />,
-        ejecutar: () => navegar('/cotizador'),
+        ejecutar: () => navegar('/crm/cotizador'),
       },
       {
         id: 'nav-cotizaciones',
         titulo: 'Listado de cotizaciones',
         grupo: 'Ir a',
         icono: <FileText className="size-3.5" />,
-        ejecutar: () => navegar('/cotizaciones'),
+        ejecutar: () => navegar('/crm/cotizaciones'),
       },
       {
         id: 'nav-clientes',
         titulo: 'Clientes',
         grupo: 'Ir a',
         icono: <User className="size-3.5" />,
-        ejecutar: () => navegar('/clientes'),
+        ejecutar: () => navegar('/crm/clientes'),
       },
       {
         id: 'nav-inventario',
         titulo: 'Inventario',
         grupo: 'Ir a',
         icono: <Package className="size-3.5" />,
-        ejecutar: () => navegar('/inventario'),
+        ejecutar: () => navegar('/crm/inventario'),
       },
       {
         id: 'accion-nueva',
         titulo: 'Nueva cotización',
         grupo: 'Acciones',
         icono: <Calculator className="size-3.5" />,
-        ejecutar: () => navegar('/cotizador'),
+        ejecutar: () => navegar('/crm/cotizador'),
       },
     ]
 
@@ -99,7 +106,7 @@ export function CommandPalette({ abierto, onCerrar }: Props) {
         detalle: `${c.telefono} · ${c.ciudad}`,
         grupo: 'Clientes',
         icono: <User className="size-3.5" />,
-        ejecutar: () => navegar(`/clientes/${c.id}`),
+        ejecutar: () => navegar(`/crm/clientes/${c.id}`),
       })
     }
 
@@ -110,7 +117,7 @@ export function CommandPalette({ abierto, onCerrar }: Props) {
         detalle: moneda(cot.total),
         grupo: 'Cotizaciones',
         icono: <FileText className="size-3.5" />,
-        ejecutar: () => navegar(`/pipeline?cotizacion=${cot.id}`),
+        ejecutar: () => navegar(`/crm/pipeline?cotizacion=${cot.id}`),
       })
     }
 
@@ -121,7 +128,7 @@ export function CommandPalette({ abierto, onCerrar }: Props) {
         detalle: `${p.sku} · ${moneda(p.precio)}`,
         grupo: 'Inventario',
         icono: <Package className="size-3.5" />,
-        ejecutar: () => navegar(`/inventario?producto=${p.id}`),
+        ejecutar: () => navegar(`/crm/inventario?producto=${p.id}`),
       })
     }
 

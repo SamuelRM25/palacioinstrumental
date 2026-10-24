@@ -45,7 +45,7 @@ export default function TiendaProducto() {
           accion={{
             etiqueta: "Volver al catálogo",
             onClick: () => {
-              window.location.href = "/tienda/catalogo"
+              window.location.href = "/catalogo"
             },
           }}
         />
@@ -62,14 +62,14 @@ export default function TiendaProducto() {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
       <nav aria-label="Ruta de navegación" className="mb-6 flex flex-wrap items-center gap-2">
         <Link
-          to="/tienda"
+          to="/"
           className="label-tech text-ink-4 transition-colors hover:text-oxblood"
         >
           Inicio
         </Link>
         <span aria-hidden className="text-ink-4">/</span>
         <Link
-          to={`/tienda/catalogo?categoria=${producto.categoria}`}
+          to={`/catalogo?categoria=${producto.categoria}`}
           className="label-tech text-ink-4 transition-colors hover:text-oxblood"
         >
           {familia?.nombre ?? "Catálogo"}

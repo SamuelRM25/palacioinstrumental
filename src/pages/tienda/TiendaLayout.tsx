@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Menu, Search, ShoppingBag, X } from 'lucide-react'
 import { Logo } from '../../components/brand/Logo'
 import { IconButton } from '../../components/ui/Button'
@@ -8,13 +8,12 @@ import { useCrm } from '../../store/crmStore'
 import { CATEGORIAS } from '../../data/config'
 
 const ENLACES = [
-  { to: '/tienda/catalogo', etiqueta: 'Instrumentos' },
-  { to: '/tienda#familias', etiqueta: 'Familias' },
-  { to: '/tienda#transparencia', etiqueta: 'Cómo comprar' },
-  { to: '/tienda#contacto', etiqueta: 'Contacto' },
+  { to: '/catalogo', etiqueta: 'Instrumentos' },
+  { to: '/#familias', etiqueta: 'Familias' },
+  { to: '/#transparencia', etiqueta: 'Cómo comprar' },
+  { to: '/#contacto', etiqueta: 'Contacto' },
 ]
-
-export function TiendaLayout() {
+export function TiendaLayout({ children }: { children?: ReactNode }) {
   const config = useCrm((s) => s.config)
   const lineas = useCart((s) => s.lineas)
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -33,6 +32,14 @@ export function TiendaLayout() {
     document.title = `${config.nombre} · Instrumentos y audio profesional`
   }, [config.nombre])
 
+  // Al navegar a un ancla (/#familias, /#transparencia) el navegador no
+  // hace el scroll solo en una SPA: lo hacemos explícito.
+  useEffect(() => {
+    if (!ubicacion.hash) return
+    const destino = document.getElementById(ubicacion.hash.slice(1))
+    if (destino) destino.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [ubicacion.pathname, ubicacion.hash])
+
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       {/* Franja de datos de la tienda */}
@@ -48,7 +55,7 @@ export function TiendaLayout() {
       {/* Cabecera */}
       <header className="sticky top-0 z-30 border-b border-rule bg-paper/94 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-8">
-          <Link to="/tienda" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5">
             <img src="/logo.png" alt="" aria-hidden className="size-10 object-contain" />
             <span className="hidden flex-col leading-none sm:flex">
               <span className="font-display text-[15px] font-semibold tracking-tight text-ink">
@@ -60,33 +67,37 @@ export function TiendaLayout() {
 
           <nav aria-label="Navegación de la tienda" className="ml-auto hidden md:block">
             <ul className="flex items-center gap-6">
-              {ENLACES.map((e) => (
-                <li key={e.etiqueta}>
-                  <NavLink
-                    to={e.to}
-                    className={({ isActive }) =>
-                      `label-tech transition-colors hover:text-oxblood ${
-                        isActive ? 'text-oxblood' : 'text-ink-2'
-                      }`
-                    }
-                  >
-                    {e.etiqueta}
-                  </NavLink>
-                </li>
-              ))}
+              {ENLACES.map((e) => {
+                // Solo "Instrumentos" marca la sección actual: los enlaces con
+                // ancla comparten la ruta "/" y NavLink los activaría todos.
+                const activo =
+                  e.to === '/catalogo' && ubicacion.pathname === '/catalogo'
+                return (
+                  <li key={e.etiqueta}>
+                    <Link
+                      to={e.to}
+                      className={`label-tech transition-colors hover:text-oxblood ${
+                        activo ? 'text-oxblood' : 'text-ink-2'
+                      }`}
+                    >
+                      {e.etiqueta}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
 
           <div className="ml-auto flex items-center gap-1 md:ml-0">
             <Link
-              to="/tienda/catalogo"
+              to="/catalogo"
               aria-label="Buscar instrumentos"
               className="hidden size-8 items-center justify-center rounded-xs border border-transparent text-ink-3 transition-colors hover:border-rule-2 hover:bg-paper-2 hover:text-ink sm:inline-flex"
             >
               <Search className="size-4" aria-hidden />
             </Link>
             <Link
-              to="/tienda/carrito"
+              to="/carrito"
               className="label-tech relative inline-flex h-9 items-center gap-2 rounded-xs border border-rule-2 px-3 text-ink transition-colors hover:border-ink"
             >
               <ShoppingBag className="size-3.5" aria-hidden />
@@ -136,7 +147,7 @@ export function TiendaLayout() {
               ))}
               <li>
                 <Link
-                  to="/tienda/carrito"
+                  to="/carrito"
                   onClick={() => setMenuAbierto(false)}
                   className="label-tech text-ink-2"
                 >
@@ -149,7 +160,7 @@ export function TiendaLayout() {
       ) : null}
 
       <main className="flex-1">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
 
       {/* Pie */}
@@ -188,7 +199,7 @@ export function TiendaLayout() {
               {CATEGORIAS.map((c) => (
                 <li key={c.id}>
                   <Link
-                    to={`/tienda/catalogo?categoria=${c.id}`}
+                    to={`/catalogo?categoria=${c.id}`}
                     className="hover:text-paper"
                   >
                     {c.nombre}
@@ -202,22 +213,22 @@ export function TiendaLayout() {
             <p className="label-tech text-brass-hi">Comprar</p>
             <ul className="mt-3 flex flex-col gap-1.5 text-[12.5px] text-paper-3">
               <li>
-                <Link to="/tienda/catalogo" className="hover:text-paper">
+                <Link to="/catalogo" className="hover:text-paper">
                   Todo el catálogo
                 </Link>
               </li>
               <li>
-                <Link to="/tienda#transparencia" className="hover:text-paper">
+                <Link to="/#transparencia" className="hover:text-paper">
                   Cuotas y formas de pago
                 </Link>
               </li>
               <li>
-                <Link to="/tienda/catalogo?solo=disponibles" className="hover:text-paper">
+                <Link to="/catalogo?solo=disponibles" className="hover:text-paper">
                   Disponibles ahora
                 </Link>
               </li>
               <li>
-                <Link to="/" className="hover:text-paper">
+                <Link to="/crm" className="hover:text-paper">
                   Workspace de ventas
                 </Link>
               </li>

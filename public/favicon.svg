@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Palacio Instrumental">
+  <rect width="64" height="64" rx="12" fill="#6E1F2C" />
+  <g stroke="#EDE6D8" stroke-width="2" stroke-linecap="round" opacity="0.55">
+    <path d="M14 14v36" />
+    <path d="M25 14v36" />
+    <path d="M36 14v36" />
+    <path d="M47 14v36" />
+  </g>
+  <circle cx="19.5" cy="26" r="3.4" fill="#C99E4C" />
+  <circle cx="41.5" cy="38" r="3.4" fill="#C99E4C" />
+</svg>

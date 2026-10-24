@@ -1,0 +1,206 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Superficies — papel de cuaderno de taller */
+  --color-paper: #f4efe5;
+  --color-paper-2: #ebe4d6;
+  --color-paper-3: #ded5c2;
+  --color-paper-4: #d2c7b1;
+
+  /* Tinta */
+  --color-ink: #17130f;
+  --color-ink-2: #3b332a;
+  --color-ink-3: #6e6459;
+  --color-ink-4: #94897c;
+
+  /* Reglas (hairlines de diapasón) */
+  --color-rule: #c9bfae;
+  --color-rule-2: #b3a894;
+
+  /* Acento primario — oxblood */
+  --color-oxblood: #6e1f2c;
+  --color-oxblood-hi: #8c2a3a;
+  --color-oxblood-soft: #f0e0e1;
+
+  /* Acento secundario — latón */
+  --color-brass: #a8823a;
+  --color-brass-hi: #c99e4c;
+  --color-brass-ink: #8a6a2e;
+  --color-brass-soft: #f1e8d6;
+
+  /* Estados */
+  --color-pine: #2f5d50;
+  --color-pine-soft: #dfeae5;
+  --color-amber: #a9661a;
+  --color-amber-soft: #f6e6d2;
+
+  /* Tipografía */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Radios —idioscráticos, casi planos */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Foco visible y consistente en toda la app */
+  :focus-visible {
+    outline: 2px solid var(--color-oxblood);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  ::selection {
+    background-color: var(--color-oxblood);
+    color: var(--color-paper);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* Barras de desplazamiento discretas, estilo panel de taller */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule-2) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-rule-2);
+    border-radius: 999px;
+    border: 3px solid var(--color-paper);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-ink-4);
+  }
+}
+
+@layer utilities {
+  /* Rótulo técnico: versalitas de condensado con tracking amplio */
+  .label-tech {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .label-mono {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Traste: hairline vertical del diapasón */
+  .frets {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--color-rule) 0 1px,
+      transparent 1px var(--frets-spacing, 100%)
+    );
+  }
+}
+
+@keyframes capo-slide {
+  from {
+    transform: translateX(var(--capo-from, 0));
+  }
+  to {
+    transform: translateX(var(--capo-to, 0));
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-rise {
+  animation: rise 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.animate-fade {
+  animation: fade 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+
+  a[href]::after {
+    content: '';
+  }
+}

@@ -168,7 +168,26 @@ export const useCrm = create<CrmState>()(
     }),
     {
       name: 'palacio-instrumental-crm',
-      version: 1,
+      version: 2,
+      migrate: (guardado, version) => {
+        const estado = guardado as Partial<CrmState>
+        if (version < 2 && estado.config) {
+          // v2: teléfono, WhatsApp y dirección reales de la tienda. Sólo se
+          // reemplazan si siguen siendo los de ejemplo; si alguien ya los
+          // cambió desde Configuración, se respeta su valor.
+          const c = estado.config
+          estado.config = {
+            ...c,
+            whatsapp: c.whatsapp === '50258144920' ? CONFIG_TIENDA.whatsapp : c.whatsapp,
+            telefono: c.telefono === '+502 5814-4920' ? CONFIG_TIENDA.telefono : c.telefono,
+            direccion:
+              c.direccion === '5ta Avenida 12-45, Zona 1, Ciudad de Guatemala'
+                ? CONFIG_TIENDA.direccion
+                : c.direccion,
+          }
+        }
+        return estado as CrmState
+      },
     },
   ),
 )

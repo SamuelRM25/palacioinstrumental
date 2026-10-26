@@ -4,8 +4,9 @@
  *
  *   public/logo.png              lockup completo, en tinta
  *   public/logo-blanco.png       lockup completo, en blanco (fondo oscuro)
- *   public/logo-escudo.png       sólo la marca (cabeza + arco), en tinta
- *   public/logo-escudo-blanco.png la marca en blanco
+ *
+ * No se genera una marca sin texto: en este logo la púa se cierra con el
+ * nombre, y cualquier recorte la deja partida.
  *
  *   node scripts/logo.mjs
  *
@@ -18,9 +19,6 @@ import { dirname, join } from 'node:path'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const ORIGEN = join(RAIZ, 'public', 'logo.png')
-
-/** Fracción del alto donde termina la marca y empieza el texto. */
-const CORTE_MARCA = 0.49
 
 const FIRMA = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
@@ -272,11 +270,6 @@ function banda(nombre, yDesde, yHasta, blanco) {
   console.log(`  ${nombre}: ${ancho}×${alto}`)
 }
 
-const altoContenido = y1 - y0
-const corte = y0 + Math.round(altoContenido * CORTE_MARCA)
-
 console.log('escritos:')
 banda('logo.png', y0, y1, false)
 banda('logo-blanco.png', y0, y1, true)
-banda('logo-escudo.png', y0, corte, false)
-banda('logo-escudo-blanco.png', y0, corte, true)

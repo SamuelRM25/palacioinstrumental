@@ -35,10 +35,10 @@ export function CabeceraTienda() {
       {/* Franja de datos */}
       <div className="bg-texto text-white">
         <div className="mx-auto flex max-w-[1360px] flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-2 sm:px-6">
-          <p className="label-web text-white/55">{config.direccion}</p>
-          <div className="flex items-center gap-5">
+          <p className="label-web hidden text-white/55 sm:block">{config.direccion}</p>
+          <div className="flex flex-1 items-center justify-between gap-5 sm:flex-none sm:justify-end">
             <a
-              href={`tel:${config.telefono}`}
+              href={`tel:${config.telefono.replace(/[^\d+]/g, '')}`}
               className="label-web text-white/70 transition-colors hover:text-acento"
             >
               {config.telefono}
@@ -55,23 +55,24 @@ export function CabeceraTienda() {
 
       {/* Barra principal */}
       <div className="border-b border-borde">
-        <div className="mx-auto flex max-w-[1360px] items-center gap-4 px-4 py-3 sm:px-6 sm:gap-7">
-          <Link to="/" className="flex shrink-0 items-center gap-3">
+        <div className="mx-auto flex max-w-[1360px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:flex-nowrap sm:gap-7 sm:px-6">
+          {/* El logo completo, tal como está diseñado: la púa se cierra
+              con el nombre, así que no se recorta. */}
+          <Link to="/" className="flex shrink-0 items-center" aria-label={`${config.nombre}, inicio`}>
             <img
-              src="/logo-escudo.png"
-              alt=""
-              aria-hidden
-              className="h-9 w-auto object-contain sm:h-10"
+              src="/logo.png"
+              alt={config.nombre}
+              width={263}
+              height={235}
+              className="h-14 w-auto object-contain sm:h-16 lg:h-[76px]"
             />
-            <span className="hidden flex-col leading-tight sm:flex">
-              <span className="font-sora text-[16px] font-bold tracking-tight text-texto">
-                {config.nombre}
-              </span>
-              <span className="label-web mt-0.5 text-texto-4">Desde 1978</span>
-            </span>
           </Link>
 
-          <form onSubmit={buscar} role="search" className="min-w-0 flex-1">
+          <form
+            onSubmit={buscar}
+            role="search"
+            className="order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:flex-1"
+          >
             <div className="relative">
               <input
                 type="search"
@@ -90,7 +91,7 @@ export function CabeceraTienda() {
             </div>
           </form>
 
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
             <a
               href={enlaceWhatsappTienda(config)}
               target="_blank"
@@ -160,7 +161,7 @@ export function CabeceraTienda() {
           />
           <div className="absolute inset-x-0 top-0 max-h-[92vh] overflow-y-auto bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-borde px-4 py-3">
-              <img src="/logo-escudo.png" alt="" className="h-8 w-auto" />
+              <img src="/logo.png" alt={config.nombre} className="h-12 w-auto" />
               <button
                 type="button"
                 onClick={() => setMenuAbierto(false)}

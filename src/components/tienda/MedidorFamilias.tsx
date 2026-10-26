@@ -30,7 +30,7 @@ export function MedidorFamilias({ className = '' }: { className?: string }) {
         <p className="label-web text-acento">Toca una barra para filtrar</p>
       </div>
 
-      <ul className="mt-4 flex h-36 items-end gap-1.5 sm:h-44 sm:gap-2">
+      <ul className="mt-4 flex h-28 items-end gap-1.5 sm:h-44 sm:gap-2">
         {CATEGORIAS.map((familia) => {
           const conteo = conteos[familia.id] ?? 0
           const proporcion = conteo / maximo
@@ -67,7 +67,7 @@ export function MedidorFamilias({ className = '' }: { className?: string }) {
               to={`/catalogo?categoria=${familia.id}`}
               title={`${familia.nombre} · ${conteos[familia.id] ?? 0} artículos`}
               aria-label={familia.nombre}
-              className="label-web block overflow-hidden text-center text-[9px] tracking-[0.08em] whitespace-nowrap text-white/50 transition-colors hover:text-acento sm:text-[10px]"
+              className="block overflow-hidden text-center text-[8.5px] font-semibold tracking-normal whitespace-nowrap uppercase text-white/50 transition-colors hover:text-acento sm:text-[10px] sm:tracking-[0.08em]"
             >
               {/* Rótulo de canal, como en una consola: tres letras. */}
               {familia.corto.slice(0, 3)}

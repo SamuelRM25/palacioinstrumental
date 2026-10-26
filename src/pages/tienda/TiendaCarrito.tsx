@@ -44,7 +44,7 @@ export default function TiendaCarrito() {
     0,
   )
 
-  // Gratis en la capital desde cierto monto; al interior siempre aplica la
+  // Gratis en Huehuetenango desde cierto monto; al interior siempre aplica la
   // tarifa nacional (es lo que promete la portada).
   const envio =
     subtotal === 0
@@ -91,7 +91,7 @@ export default function TiendaCarrito() {
       `*Total: ${moneda(total)}*`,
       `Plan de pago: ${meses === 0 ? 'Contado' : `${meses} cuotas de ${moneda(total / meses)}`}`,
       envio > 0 ? `Envío: ${moneda(envio)}` : 'Envío sin costo',
-      entrega === 'local' ? 'Entrega en el local de Zona 1' : 'Envío al interior del país',
+      entrega === 'local' ? `Recojo en el local: ${config.direccion}` : 'Envío al resto del país',
       '',
       'Quedo al pendiente de confirmar disponibilidad.',
     ].join('\n'),
@@ -246,7 +246,7 @@ export default function TiendaCarrito() {
                   >
                     En el local
                     <span className="block text-[11.5px] font-normal text-texto-4">
-                      Zona 1 · {config.envioLocal === 0 ? 'sin costo' : monedaCorta(config.envioLocal)}
+                      Zona 11, Huehue · {config.envioLocal === 0 ? 'sin costo' : monedaCorta(config.envioLocal)}
                     </span>
                   </button>
                   <button

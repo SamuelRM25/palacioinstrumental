@@ -247,6 +247,15 @@
   }
 }
 
+@keyframes hero-progreso {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes medidor-pulso {
   0%,
   100% {

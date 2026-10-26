@@ -66,7 +66,7 @@ export async function generarPDFCotizacion(
   // ── Encabezado ──────────────────────────────────────────────────────────
   if (escudo) {
     try {
-      doc.addImage(escudo, 'PNG', M, y - 4, 74, 74)
+      doc.addImage(escudo, 'PNG', M, y - 4, 74, 66) // logo.png es 263×235
     } catch {
       /* si el escudo no se puede decodificar, el documento sigue su curso */
     }

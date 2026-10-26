@@ -20,9 +20,9 @@ import {
   disponibles,
 } from '../../lib/tienda'
 import { moneda, monedaCorta } from '../../lib/format'
-import { Boton, BotonEnlace, Etiqueta } from '../../components/tienda/Piezas'
+import { Boton, Etiqueta } from '../../components/tienda/Piezas'
 import { IlustracionProducto } from '../../components/tienda/IlustracionProducto'
-import { MedidorFamilias } from '../../components/tienda/MedidorFamilias'
+import { HeroPortada } from '../../components/tienda/HeroPortada'
 import { TarjetaProducto } from '../../components/tienda/TarjetaProducto'
 import { TiraMarcas } from '../../components/tienda/TiraMarcas'
 
@@ -46,56 +46,8 @@ export default function TiendaHome() {
 
   return (
     <>
-      {/* ── Portada ───────────────────────────────────────────── */}
-      <section className="bg-texto text-white">
-        <div className="mx-auto grid max-w-[1360px] items-center gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
-          <div>
-            <Etiqueta className="text-acento">Guatemala · desde 1978</Etiqueta>
-            <h1 className="mt-5 font-sora text-[36px] leading-[1.06] font-extrabold tracking-[-0.03em] text-white sm:text-[46px] lg:text-[52px]">
-              El instrumento correcto, con el precio correcto.
-            </h1>
-            <p className="mt-6 max-w-xl text-[16px] leading-relaxed text-white/65">
-              Instrumentos, audio profesional y equipo de estudio de las marcas
-              que ya conocés. Cada ficha trae sus especificaciones reales, su
-              disponibilidad y el precio de cada cuota antes de que preguntes.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <BotonEnlace variante="acento" to="/catalogo">
-                Ver catálogo
-                <ArrowRight className="size-4" aria-hidden />
-              </BotonEnlace>
-              <a
-                href={enlaceWhatsappTienda(config)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center gap-2 rounded-md border border-white/25 px-5 text-[13px] font-semibold text-white transition-colors hover:border-white hover:bg-white/5"
-              >
-                <MessageCircle className="size-4" aria-hidden />
-                Hablar con un asesor
-              </a>
-            </div>
-
-            <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-white/12 pt-7 sm:grid-cols-4">
-              {[
-                `Garantía de ${config.garantiaMeses} meses`,
-                'Envío a todo el país',
-                `Hasta ${maxCuotas} cuotas`,
-                'Asesoría técnica',
-              ].map((texto) => (
-                <li key={texto} className="flex items-start gap-2.5">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-acento" />
-                  <span className="text-[13px] leading-snug text-white/70">
-                    {texto}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <MedidorFamilias className="lg:pl-4" />
-        </div>
-      </section>
+      {/* ── Portada: cinco capas que rotan cada 4 s ───────────── */}
+      <HeroPortada />
 
       {/* ── Marcas ───────────────────────────────────────────── */}
       <TiraMarcas marcas={nombresMarcas} />
@@ -242,7 +194,7 @@ export default function TiendaHome() {
               {
                 icono: Truck,
                 titulo: 'Envío',
-                texto: `Gratis en la capital desde ${monedaCorta(config.envioGratisDesde)}. Al resto del país ${monedaCorta(config.envioNacional)}.`,
+                texto: `Gratis en Huehuetenango desde ${monedaCorta(config.envioGratisDesde)}. Al resto del país ${monedaCorta(config.envioNacional)}.`,
               },
               {
                 icono: BadgeCheck,
@@ -272,7 +224,7 @@ export default function TiendaHome() {
                 Tres pasos y ya tenés tu instrumento
               </h2>
               <p className="mt-4 text-[15px] leading-relaxed text-texto-3">
-                Podés comprar en línea o pasar por el local en Zona 1. En los dos
+                Podés comprar en línea o pasar por el local en Las Vegas, Zona 11 de Huehuetenango. En los dos
                 casos, el asesor que te responde conoce el stock real.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
@@ -307,7 +259,7 @@ export default function TiendaHome() {
                 {
                   n: '03',
                   titulo: 'Entregamos',
-                  texto: 'Pasás por el local en Zona 1 o lo enviamos a todo el país. Factura o recibo, como lo necesités.',
+                  texto: 'Pasás por el local en Zona 11 de Huehuetenango o lo enviamos a todo el país. Factura o recibo, como lo necesités.',
                 },
               ].map((paso) => (
                 <li
@@ -350,7 +302,7 @@ export default function TiendaHome() {
                   Escribir por WhatsApp
                 </a>
                 <a
-                  href={`tel:${config.telefono}`}
+                  href={`tel:${config.telefono.replace(/[^\d+]/g, '')}`}
                   className="inline-flex h-12 items-center gap-2 rounded-md border border-white/25 px-6 text-[13.5px] font-semibold text-white transition-colors hover:border-white"
                 >
                   {config.telefono}

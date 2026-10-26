@@ -11,10 +11,13 @@ export function PieTienda() {
     <footer id="contacto" className="bg-texto text-white">
       <div className="mx-auto grid max-w-[1360px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <img src="/logo-escudo-blanco.png" alt="" aria-hidden className="h-11 w-auto" />
-          <p className="mt-4 font-sora text-[17px] font-bold tracking-tight">
-            {config.nombre}
-          </p>
+          <img
+            src="/logo-blanco.png"
+            alt={config.nombre}
+            width={263}
+            height={235}
+            className="h-28 w-auto"
+          />
           <p className="mt-2 text-[13.5px] leading-relaxed text-white/60">
             {config.lema}. Instrumentos de las marcas que ya conocés, asesoría
             técnica honesta y garantía real en cada venta.
@@ -98,7 +101,7 @@ export function PieTienda() {
             </li>
             <li className="flex gap-2.5">
               <Phone className="mt-0.5 size-4 shrink-0 text-acento" aria-hidden />
-              <a href={`tel:${config.telefono}`} className="hover:text-white">
+              <a href={`tel:${config.telefono.replace(/[^\d+]/g, '')}`} className="hover:text-white">
                 {config.telefono}
               </a>
             </li>

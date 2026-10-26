@@ -24,10 +24,10 @@ export const VENDEDORES: Vendedor[] = [
 export const CONFIG_TIENDA: ConfigTienda = {
   nombre: 'Palacio Instrumental',
   lema: 'Instrumentos y audio profesional · desde 1978',
-  whatsapp: '50258144920',
-  telefono: '+502 5814-4920',
+  whatsapp: '50232346362',
+  telefono: '+502 3234-6362',
   email: 'ventas@palacioinstrumental.com',
-  direccion: '5ta Avenida 12-45, Zona 1, Ciudad de Guatemala',
+  direccion: 'Las Vegas, Zona 11, Huehuetenango, Huehuetenango',
   horarios: 'Lunes a viernes 9:00–18:00 · Sábados 9:00–13:00',
   ivaPct: 12,
   mesesCredito: [0, 3, 6, 12],

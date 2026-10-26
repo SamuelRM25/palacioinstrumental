@@ -183,7 +183,7 @@ export default function TiendaProducto() {
               },
               {
                 icono: Truck,
-                texto: `Envío gratis en la capital desde ${monedaCorta(config.envioGratisDesde)}; al resto del país ${monedaCorta(config.envioNacional)}.`,
+                texto: `Envío gratis en Huehuetenango desde ${monedaCorta(config.envioGratisDesde)}; al resto del país ${monedaCorta(config.envioNacional)}.`,
               },
             ].map(({ icono: Icono, texto }) => (
               <p

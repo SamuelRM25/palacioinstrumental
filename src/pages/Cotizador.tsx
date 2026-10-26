@@ -634,7 +634,7 @@ function ModalCliente({
       email: email.trim() || undefined,
       tipo,
       canal: 'whatsapp',
-      ciudad: ciudad.trim() || 'Ciudad de Guatemala',
+      ciudad: ciudad.trim() || 'Huehuetenango',
       notas: notas.trim(),
     })
     setNombre('')

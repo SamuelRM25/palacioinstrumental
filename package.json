@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "fotos": "node scripts/escaneo-fotos.mjs",
+    "predev": "node scripts/escaneo-fotos.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/escaneo-fotos.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

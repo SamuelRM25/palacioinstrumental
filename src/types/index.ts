@@ -37,6 +37,11 @@ export interface Producto {
   specs: Spec[]
   destacado?: boolean
   nuevo?: boolean
+  /**
+   * Ruta de la fotografía real del artículo (en `public/`). Si no está,
+   * la tienda dibuja una ilustración de estudio según la familia.
+   */
+  imagen?: string
 }
 
 export type TipoCliente = 'consumidor' | 'banda' | 'estudio' | 'evento' | 'colegio'

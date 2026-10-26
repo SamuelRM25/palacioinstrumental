@@ -22,17 +22,17 @@ servidor ni base de datos.
 | # | Pantalla | Qué mostrar | Qué decir |
 |---|---|---|---|
 | 1 | **Portada** `/` | El titular, la **lista de precios** que hace de póster y el panel **"Sin letra pequeña"** | *“Las dos tiendas de referencia no dicen ni una palabra de cuotas, garantía o envío en su portada. Nosotros sí: el cliente decide con todos los números a la vista.”* |
-| 2 | **Familias** | El **diapasón**: cada familia de instrumento es un traste y el capo de latón se desliza al cambiar de familia | *“La navegación por familias es un diapasón de verdad. Es el mismo lenguaje del instrumento.”* |
-| 3 | **Catálogo** `/catalogo` | Los 54 artículos con ficha: referencia, glifo de familia, dos especificaciones, disponibilidad y precio | *“Cada artículo muestra sus especificaciones reales. No es una foto con un precio: es la ficha.”* |
-| 4 | **Filtros** | Buscar por nombre, marca o referencia; filtrar por familia, marca y precio; "solo disponibles"; ordenar | *“El cliente encuentra lo que busca sin pedirle ayuda a nadie.”* |
+| 2 | **El medidor** | En la portada, las 12 barras tipo VU: la altura de cada una es la cantidad real de artículos de esa familia, y al tocarla filtra el catálogo | *“La forma del catálogo es la navegación. Cada barra es un dato y un filtro a la vez.”* |
+| 3 | **Catálogo** `/catalogo` | Los 54 artículos en tarjetas con imagen, cinta de estado (Agotado / Novedad), dos especificaciones y precio; vista en cuadrícula o lista | *“Cada artículo muestra sus especificaciones reales. No es una foto con un precio: es la ficha.”* |
+| 4 | **Filtros** | Buscador grande de la cabecera; barra lateral con familia, marca, precio y disponibilidad (con contadores); en móvil, en un panel deslizable | *“El cliente encuentra lo que busca sin pedirle ayuda a nadie.”* |
 | 5 | **Ficha de producto** | La tabla de especificaciones completa, la disponibilidad, el selector de **plan de pago** y el total | *“Y antes de comprar, el cliente ya sabe cuánto va a pagar cada mes.”* |
 | 6 | **Carrito** `/carrito` | Agregar dos o tres artículos, cambiar cantidades, elegir el plan y ver el total con el envío calculado | *“El carrito calcula el envío y muestra el precio por cuota antes de que el cliente pregunte.”* |
 | 7 | **Cierre** | Botón **"Confirmar por WhatsApp"** | *“El pedido llega al asesor con los precios, el plan de pago y el envío ya resueltos. Así empieza la conversación con datos, no con '¿cuánto cuesta?'”* |
 
 ### Parte 2 — El workspace (lo que ve el equipo)
 
-Entra por **`/crm`** (el botón **TIENDA** de la barra superior, o el enlace
-*Workspace de ventas* del pie de la tienda, te devuelven a la tienda pública).
+Entra por **`/crm`**, o desde el enlace discreto **Acceso del equipo** de la franja
+superior de la tienda. El botón **TIENDA** del workspace devuelve a la tienda pública.
 
 | # | Pantalla | Qué mostrar | Qué decir |
 |---|---|---|---|
@@ -85,6 +85,7 @@ Otros comandos:
 npm run build    # compila a dist/
 npm run preview  # sirve el build de producción
 npm run lint     # ESLint
+npm run fotos    # registra las fotos de public/productos/
 ```
 
 Requiere Node 20 o superior.
@@ -203,6 +204,34 @@ Engineering — traducida a un taller de luthier.
   técnico.
 - **Radios casi planos** (2–8 px) y espaciado con escala fija.
 
+### La tienda pública (rediseño)
+
+El workspace conserva la paleta de taller. La tienda tiene su propio sistema,
+en tokens aparte dentro de `src/index.css` (`fondo`, `texto`, `borde`,
+`acento`…), para que ningún cambio de una toque a la otra.
+
+- **Paleta** — blanco, tinta `#0E1620` y un único acento cian `#00B8CC`. El cian
+  nunca se usa solo para texto pequeño sobre blanco (contraste 2.4:1): va con
+  texto oscuro encima o sobre fondo oscuro. Para cambiarlo basta con editar
+  `--color-acento` y sus dos derivados.
+- **Tipografía** — **Sora** para títulos, **Instrument Sans** para texto e
+  interfaz, **IBM Plex Mono** para referencias y datos.
+- **La firma: el medidor** — doce barras tipo vúmetro en la portada, una por
+  familia; la altura es la cantidad real de artículos y cada barra filtra el
+  catálogo.
+- **Imágenes** — cada artículo muestra su foto si existe y, si no, una
+  ilustración de estudio de su familia (distinta para cada SKU).
+
+#### Cargar fotos reales
+
+1. Guarda la foto en `public/productos/` con el SKU como nombre, por ejemplo
+   `public/productos/GTR-YAM-00800.jpg` (sirven `.jpg`, `.png`, `.webp`, `.avif`).
+2. Corre `npm run fotos` (también corre solo antes de `npm run dev` y
+   `npm run build`).
+
+El script avisa si una foto no corresponde a ningún SKU del catálogo. Los
+artículos sin foto siguen con su ilustración, sin peticiones fallidas.
+
 ### Accesibilidad
 
 - Todo el flujo es navegable con teclado; el pipeline tiene alternativa al
@@ -221,7 +250,8 @@ src/
 ├── App.tsx                    rutas
 ├── index.css                  tokens de marca (@theme) + base
 ├── types/                     Producto, Cliente, Cotizacion, Etapa…
-├── data/                      catálogo, clientes, cotizaciones, config
+├── data/                      catálogo, clientes, cotizaciones, config,
+│                              fotos.generated.ts (lo escribe scripts/escaneo-fotos.mjs)
 ├── store/
 │   ├── crmStore.ts            zustand + persist (clientes, cotizaciones, catálogo)
 │   └── cartStore.ts           zustand + persist (carrito de la tienda)
@@ -229,12 +259,18 @@ src/
 │   ├── format.ts              moneda, fechas, teléfonos
 │   ├── analytics.ts           KPIs, embudo, semanas, "requiere atención"
 │   ├── whatsapp.ts            enlaces wa.me y mensajes
+│   ├── tienda.ts              filtros, existencias, interés de cuotas
 │   └── pdf.ts                 PDF con jsPDF + autoTable (carga diferida)
 ├── components/
-│   ├── brand/                 Logo, Fretboard (el diapasón), InstrumentIcon
+│   ├── brand/                 Logo, Fretboard (el diapasón del cotizador)
 │   ├── charts/                gráficos en CSS/SVG, sin librerías
 │   ├── layout/                AppShell, CommandPalette
-│   ├── tienda/                FichaProducto (la ficha de catálogo)
+│   ├── tienda/                piezas de la tienda pública:
+│   │                          CabeceraTienda, MegaFamilias, MedidorFamilias,
+│   │                          TiraMarcas, HeroCategoria, TarjetaProducto,
+│   │                          BarraCatalogo, PanelFiltros, SelectorPlan,
+│   │                          IlustracionProducto, PieTienda, Piezas (botón,
+│   │                          precio, cinta, imagen, hoja móvil…)
 │   └── ui/                    kit de componentes
 └── pages/
     ├── Panel.tsx              indicadores y resumen

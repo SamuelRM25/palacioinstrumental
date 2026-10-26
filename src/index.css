@@ -1,49 +1,77 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Superficies — papel de cuaderno de taller */
+  /* ─────────────────────────────────────────────────────────────
+     WORKSPACE DE VENTAS (/crm)
+     Se conserva tal cual: el CRM no entra en este rediseño.
+     ───────────────────────────────────────────────────────────── */
   --color-paper: #f4efe5;
   --color-paper-2: #ebe4d6;
   --color-paper-3: #ded5c2;
   --color-paper-4: #d2c7b1;
 
-  /* Tinta */
   --color-ink: #17130f;
   --color-ink-2: #3b332a;
   --color-ink-3: #6e6459;
   --color-ink-4: #94897c;
 
-  /* Reglas (hairlines de diapasón) */
   --color-rule: #c9bfae;
   --color-rule-2: #b3a894;
 
-  /* Acento primario — oxblood */
   --color-oxblood: #6e1f2c;
   --color-oxblood-hi: #8c2a3a;
   --color-oxblood-soft: #f0e0e1;
 
-  /* Acento secundario — latón */
   --color-brass: #a8823a;
   --color-brass-hi: #c99e4c;
   --color-brass-ink: #8a6a2e;
   --color-brass-soft: #f1e8d6;
 
-  /* Estados */
   --color-pine: #2f5d50;
   --color-pine-soft: #dfeae5;
   --color-amber: #a9661a;
   --color-amber-soft: #f6e6d2;
 
+  /* ─────────────────────────────────────────────────────────────
+     TIENDA PÚBLICA (/)
+     Superficie limpia, tinta profunda y un único acento: el cian
+     de una señal de equipo de audio. Ningún color literal vive en
+     el JSX de la tienda; todo sale de acá.
+     ───────────────────────────────────────────────────────────── */
+  --color-fondo: #ffffff;
+  --color-fondo-2: #f5f7f9;
+  --color-fondo-3: #e9edf1;
+
+  --color-texto: #0e1620;
+  --color-texto-2: #1b2836;
+  --color-texto-3: #5a6673;
+  --color-texto-4: #8a94a0;
+
+  --color-borde: #e2e7ec;
+  --color-borde-2: #cfd6dd;
+
+  --color-acento: #00b8cc;
+  --color-acento-2: #0092a3;
+  --color-acento-3: #e0f7fa;
+
+  --color-ok: #1f8a5b;
+  --color-ok-2: #e7f5ee;
+  --color-alerta: #d9534f;
+  --color-alerta-2: #fdecea;
+
   /* Tipografía */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-sora: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-instrument: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Radios —idioscráticos, casi planos */
+  /* Radios — el workspace conserva los suyos */
   --radius-xs: 2px;
   --radius-sm: 3px;
   --radius-md: 5px;
   --radius-lg: 8px;
+  --radius-xl: 14px;
 }
 
 @layer base {
@@ -115,6 +143,39 @@
   *::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-ink-4);
   }
+
+  /* ─────────────────────────────────────────────────────────────
+     TIENDA PÚBLICA
+     Todo lo que vive bajo [data-tienda] usa las reglas de la
+     tienda. El workspace, fuera de ese atributo, no cambia.
+     ───────────────────────────────────────────────────────────── */
+  [data-tienda] {
+    font-family: var(--font-instrument);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-texto);
+    background-color: var(--color-fondo);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  [data-tienda] :focus-visible {
+    outline-color: var(--color-acento-2);
+  }
+
+  [data-tienda] h1,
+  [data-tienda] h2,
+  [data-tienda] h3,
+  [data-tienda] h4 {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-texto);
+  }
+
+  [data-tienda] ::selection {
+    background-color: var(--color-acento-3);
+    color: var(--color-texto);
+  }
 }
 
 @layer utilities {
@@ -133,22 +194,36 @@
     letter-spacing: 0.04em;
   }
 
-  /* Traste: hairline vertical del diapasón */
-  .frets {
-    background-image: repeating-linear-gradient(
-      to right,
-      var(--color-rule) 0 1px,
-      transparent 1px var(--frets-spacing, 100%)
-    );
-  }
-}
+  /* ─── Tienda pública ─────────────────────────────────────── */
 
-@keyframes capo-slide {
-  from {
-    transform: translateX(var(--capo-from, 0));
+  /* Rótulo de la tienda: versalitas de Instrument Sans */
+  .label-web {
+    font-family: var(--font-instrument);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
-  to {
-    transform: translateX(var(--capo-to, 0));
+
+  /* Código, referencia, SKU: lo que se teclea, va en monoespaciada */
+  .codigo-web {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Filete de 1px que separa bloques sin ruido */
+  .filete-web {
+    border-top: 1px solid var(--color-borde);
+  }
+
+  .sin-barra {
+    scrollbar-width: none;
+  }
+
+  .sin-barra::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -168,6 +243,16 @@
     opacity: 0;
   }
   to {
+    opacity: 1;
+  }
+}
+
+@keyframes medidor-pulso {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
     opacity: 1;
   }
 }

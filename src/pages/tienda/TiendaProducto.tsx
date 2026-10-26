@@ -1,286 +1,322 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { MessageCircle, Minus, Plus, ShoppingBag } from 'lucide-react'
-import { Button } from '../../components/ui/Button'
-import { Money } from '../../components/ui/Money'
-import { Badge } from '../../components/ui/Badge'
-import { EmptyState } from '../../components/ui/EmptyState'
-import { Select } from '../../components/ui/Field'
-import { InstrumentIcon } from '../../components/brand/InstrumentIcon'
-import { FichaProducto } from '../../components/tienda/FichaProducto'
+import {
+  ArrowRight,
+  ChevronRight,
+  MessageCircle,
+  Minus,
+  Plus,
+  ShieldCheck,
+  Truck,
+} from 'lucide-react'
 import { useCrm } from '../../store/crmStore'
 import { useCart } from '../../store/cartStore'
-import { useToast } from '../../components/ui/toastContext'
 import { CATEGORIAS } from '../../data/config'
+import {
+  disponibles,
+  estaAgotado,
+  estadoFicha,
+  quedanPocas,
+  totalConInteres,
+} from '../../lib/tienda'
+import { monedaCorta } from '../../lib/format'
 import { enlaceWhatsappTienda } from '../../lib/whatsapp'
-import { moneda } from '../../lib/format'
+import { Boton, Cinta, Etiqueta, ImagenProducto, Precio } from '../../components/tienda/Piezas'
+import { SelectorPlan } from '../../components/tienda/SelectorPlan'
+import { TarjetaProducto } from '../../components/tienda/TarjetaProducto'
 
 export default function TiendaProducto() {
   const { id } = useParams()
   const config = useCrm((s) => s.config)
   const productos = useCrm((s) => s.productos)
   const agregar = useCart((s) => s.agregar)
-  const avisar = useToast().avisar
+
   const [cantidad, setCantidad] = useState(1)
   const [meses, setMeses] = useState(0)
+  const [agregado, setAgregado] = useState(false)
+
+  // Al cambiar de artículo, la cantidad vuelve a uno (ajuste en render).
+  const [articuloPrevio, setArticuloPrevio] = useState(id)
+  if (id !== articuloPrevio) {
+    setArticuloPrevio(id)
+    setCantidad(1)
+  }
 
   const producto = productos.find((p) => p.id === id)
-  const familia = producto
-    ? CATEGORIAS.find((c) => c.id === producto?.categoria)
-    : undefined
+  const familia = CATEGORIAS.find((c) => c.id === producto?.categoria)
 
-  const relacionados = useMemo(() => {
-    if (!producto) return []
-    return productos
-      .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
-      .slice(0, 4)
-  }, [productos, producto])
+  const relacionados = useMemo(
+    () =>
+      producto
+        ? productos
+            .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
+            .slice(0, 4)
+        : [],
+    [productos, producto],
+  )
+
+  useEffect(() => {
+    if (!producto) return
+    document.title = `${producto.nombre} · ${config.nombre}`
+  }, [producto, config.nombre])
 
   if (!producto) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
-        <EmptyState
-          titulo="Ese artículo no existe"
-          descripcion="Puede que se haya agotado y retirado del catálogo."
-          accion={{
-            etiqueta: "Volver al catálogo",
-            onClick: () => {
-              window.location.href = "/catalogo"
-            },
-          }}
-        />
+      <div className="mx-auto max-w-[1360px] px-4 py-24 sm:px-6">
+        <div className="rounded-xl border border-dashed border-borde-2 bg-fondo-2 px-6 py-16 text-center">
+          <h1 className="font-sora text-[24px] font-extrabold">
+            Ese artículo no existe
+          </h1>
+          <p className="mt-2 text-[14px] text-texto-3">
+            Puede que se haya agotado o que el enlace esté incompleto.
+          </p>
+          <Link
+            to="/catalogo"
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-md bg-texto px-5 text-[13px] font-semibold text-white"
+          >
+            Ver el catálogo
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+        </div>
       </div>
     )
   }
 
-  const disponible = producto.stock - producto.reservado
-  const agotado = disponible <= 0
-  const maximo = Math.max(disponible, 1)
-  const total = producto.precio * cantidad
+  const estado = estadoFicha(producto)
+  const existencias = disponibles(producto)
+  const agotado = estaAgotado(producto)
+  const pocas = quedanPocas(producto)
+  const maximo = Math.max(existencias, 1)
+
+  const subtotal = producto.precio * cantidad
+  const total = totalConInteres(subtotal, meses, config.interesPct)
+
+  const consultar = enlaceWhatsappTienda(
+    config,
+    `Hola ${config.nombre}, me interesa el *${producto.nombre}* (${producto.sku}). ¿Está disponible?`,
+  )
+
+  const alAgregar = () => {
+    agregar(producto.id, cantidad)
+    setAgregado(true)
+    window.setTimeout(() => setAgregado(false), 1800)
+  }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
-      <nav aria-label="Ruta de navegación" className="mb-6 flex flex-wrap items-center gap-2">
-        <Link
-          to="/"
-          className="label-tech text-ink-4 transition-colors hover:text-oxblood"
-        >
+    <div className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6 sm:py-10">
+      <nav aria-label="Ruta" className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-texto-4">
+        <Link to="/" className="hover:text-texto">
           Inicio
         </Link>
-        <span aria-hidden className="text-ink-4">/</span>
-        <Link
-          to={`/catalogo?categoria=${producto.categoria}`}
-          className="label-tech text-ink-4 transition-colors hover:text-oxblood"
-        >
-          {familia?.nombre ?? "Catálogo"}
-        </Link>
-        <span aria-hidden className="text-ink-4">/</span>
-        <span className="label-tech text-ink-2">{producto.sku}</span>
+        <ChevronRight className="size-3.5" aria-hidden />
+        {familia ? (
+          <>
+            <Link
+              to={`/catalogo?categoria=${familia.id}`}
+              className="hover:text-texto"
+            >
+              {familia.nombre}
+            </Link>
+            <ChevronRight className="size-3.5" aria-hidden />
+          </>
+        ) : null}
+        <span className="text-texto-3">{producto.nombre}</span>
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12">
-        {/* Columna de la referencia */}
-        <div>
-          <div className="flex items-start gap-5">
-            <div className="flex size-24 shrink-0 items-center justify-center border border-rule bg-paper-2 text-ink-3">
-              <InstrumentIcon categoria={producto.categoria} className="size-14" />
+      {/* En móvil el orden es galería → compra → detalle; en escritorio la
+          caja de compra ocupa la columna derecha y se queda fija. */}
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-x-14 lg:gap-y-0">
+        {/* ── Galería ──────────────────────────────────────────── */}
+        <div className="order-1 lg:order-none lg:col-start-1 lg:row-start-1">
+          <div className="relative overflow-hidden rounded-2xl border border-borde bg-fondo-2">
+            <div className="aspect-square">
+              <ImagenProducto producto={producto} prioridad />
             </div>
-            <div className="min-w-0">
-              <p className="label-tech text-oxblood">{producto.marca}</p>
-              <h1 className="mt-2 font-display text-[30px] leading-tight font-semibold tracking-tight text-ink sm:text-[36px]">
-                {producto.nombre}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="label-mono text-ink-4">{producto.sku}</span>
-                {agotado ? (
-                  <Badge tono="oxblood">Sin existencias</Badge>
-                ) : disponible <= 2 ? (
-                  <Badge tono="amber">Últimas {disponible}</Badge>
-                ) : (
-                  <Badge tono="pine">En stock</Badge>
-                )}
-                {producto.nuevo ? <Badge tono="brass">Novedad</Badge> : null}
-                {producto.destacado ? <Badge tono="muted">Más vendido</Badge> : null}
-              </div>
-            </div>
+            {estado ? (
+              <span className="absolute top-4 left-4">
+                <Cinta tono={estado.tono}>{estado.texto}</Cinta>
+              </span>
+            ) : null}
           </div>
+        </div>
 
-          <section className="mt-8">
-            <h2 className="label-tech border-b border-ink pb-2 text-ink">Especificaciones</h2>
+        {/* ── Detalle ──────────────────────────────────────────── */}
+        <div className="order-3 lg:order-none lg:col-start-1 lg:row-start-2">
+          {/* Especificaciones */}
+          <section className="lg:mt-10">
+            <h2 className="border-b border-texto pb-3 font-sora text-[17px] font-bold">
+              Especificaciones
+            </h2>
             <dl className="mt-1">
-              {producto.specs.map((s) => (
+              {producto.specs.map((spec) => (
                 <div
-                  key={s.etiqueta}
-                  className="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule py-2.5"
+                  key={spec.etiqueta}
+                  className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-borde py-3"
                 >
-                  <dt className="text-[13px] text-ink-3">{s.etiqueta}</dt>
-                  <dd className="label-mono text-right text-ink">{s.valor}</dd>
+                  <dt className="text-[13.5px] text-texto-3">{spec.etiqueta}</dt>
+                  <dd className="codigo-web text-right text-texto">{spec.valor}</dd>
                 </div>
               ))}
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule py-2.5">
-                <dt className="text-[13px] text-ink-3">Familia</dt>
-                <dd className="label-mono text-ink">{familia?.nombre}</dd>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-borde py-3">
+                <dt className="text-[13.5px] text-texto-3">Familia</dt>
+                <dd className="codigo-web text-right text-texto">
+                  {familia?.nombre}
+                </dd>
               </div>
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule py-2.5">
-                <dt className="text-[13px] text-ink-3">Existencias</dt>
-                <dd className="label-mono text-ink">{agotado ? "Agotado" : disponible + " disponibles"}</dd>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-borde py-3">
+                <dt className="text-[13.5px] text-texto-3">Existencias</dt>
+                <dd className="codigo-web text-right text-texto">
+                  {agotado
+                    ? 'Sin existencias'
+                    : `${existencias} disponibles`}
+                </dd>
               </div>
             </dl>
           </section>
 
-          <section className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          {/* Condiciones */}
+          <section className="mt-10 grid gap-4 sm:grid-cols-2">
             {[
-              "Garantía de " + config.garantiaMeses + " meses sobre defectos de fábrica.",
-              total >= config.envioGratisDesde
-                ? "Envío sin costo dentro de la ciudad Capital."
-                : "Envío nacional: " + moneda(config.envioNacional) + ". Sin costo en compras mayores a " + moneda(config.envioGratisDesde) + ".",
-              "Precios en quetzales, con IVA incluido.",
-              "Recibimos efectivo, tarjetas y transferencias. También aceptamos apartados con seña.",
-            ].map((c) => (
-              <p key={c} className="flex gap-2 text-[12.5px] leading-relaxed text-ink-2">
-                <span aria-hidden className="text-brass">·</span>
-                <span>{c}</span>
+              {
+                icono: ShieldCheck,
+                texto: `Garantía de ${config.garantiaMeses} meses sobre defectos de fábrica, en el local o con el técnico de la tienda.`,
+              },
+              {
+                icono: Truck,
+                texto: `Envío gratis en la capital desde ${monedaCorta(config.envioGratisDesde)}; al resto del país ${monedaCorta(config.envioNacional)}.`,
+              },
+            ].map(({ icono: Icono, texto }) => (
+              <p
+                key={texto}
+                className="flex gap-3 rounded-xl border border-borde bg-fondo-2 p-4 text-[13px] leading-relaxed text-texto-2"
+              >
+                <Icono className="size-5 shrink-0 text-acento-2" aria-hidden />
+                {texto}
               </p>
             ))}
           </section>
 
-          <section className="mt-8">
-            <h2 className="label-tech border-b border-ink pb-2 text-ink">Productos relacionados</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {relacionados.map((p) => (
-                <FichaProducto
-                  key={p.id}
-                  producto={p}
-                  onAgregar={(prod) => {
-                    agregar(prod.id)
-                    avisar(prod.nombre + " agregado al carrito.")
-                  }}
-                />
-              ))}
-            </div>
-          </section>
+          {/* Relacionados */}
+          {relacionados.length ? (
+            <section className="mt-12">
+              <h2 className="font-sora text-[20px] font-bold">
+                También de {familia?.nombre.toLowerCase()}
+              </h2>
+              <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {relacionados.map((p) => (
+                  <li key={p.id}>
+                    <TarjetaProducto producto={p} onAgregar={(x) => agregar(x.id)} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
         </div>
 
-        {/* Columna de compra */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="border border-ink bg-paper-2">
-            <div className="border-b border-ink px-4 py-3">
-              <p className="label-tech text-ink-4">Precio</p>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <Money valor={producto.precio} size="lg" />
-                <span className="label-mono text-ink-4">c/u</span>
-              </div>
+        {/* ── Caja de compra ───────────────────────────────────── */}
+        <aside className="order-2 lg:order-none lg:sticky lg:top-40 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+          <Etiqueta className="text-acento-2">{producto.marca}</Etiqueta>
+          <h1 className="mt-2.5 font-sora text-[28px] leading-[1.1] font-extrabold tracking-tight sm:text-[34px] lg:text-[40px]">
+            {producto.nombre}
+          </h1>
+          <p className="codigo-web mt-2.5 text-texto-4">
+            Ref. {producto.sku} · {familia?.nombre}
+          </p>
+
+          <div className="mt-6 rounded-2xl border border-borde bg-fondo-2 p-6">
+            <div className="flex items-end justify-between gap-3">
+              <Precio valor={producto.precio} tamano="lg" />
+              <span className="label-web pb-1.5 text-texto-4">c/u</span>
             </div>
 
-            <div className="px-4 py-4">
-              {agotado ? (
-                <p className="text-[13px] leading-relaxed text-ink-2">
-                  Este artículo está agotado. Escribinos y te avisamos apenas
-                  entre.
-                </p>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="label-tech text-ink-3">Cantidad</span>
-                    <span className="inline-flex h-8 items-center rounded-xs border border-rule-2 bg-paper px-1.5 text-center font-mono text-[12px] text-ink focus:border-ink-3 focus:outline-none">
-                      <button
-                        type="button"
-                        aria-label="Quitar una unidad"
-                        onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-                        className="flex h-8 w-8 items-center justify-center text-ink-3 transition-colors hover:text-ink"
-                      >
-                        <Minus className="size-3" />
-                      </button>
-                      <span className="w-8 text-center font-mono text-[12px] text-ink">
-                        {cantidad}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label="Agregar una unidad"
-                        onClick={() => setCantidad((c) => Math.min(maximo, c + 1))}
-                        className="flex h-8 w-8 items-center justify-center text-ink-3 transition-colors hover:text-ink"
-                      >
-                        <Plus className="size-3" />
-                      </button>
-                    </span>
-                  </div>
+            <p
+              className={`mt-2 text-[13px] font-medium ${
+                agotado ? 'text-alerta' : pocas ? 'text-texto-2' : 'text-ok'
+              }`}
+            >
+              {agotado
+                ? 'Sin existencias — avisanos cuando entre'
+                : pocas
+                  ? `Sólo quedan ${existencias}`
+                  : 'En stock · sale hoy del local'}
+            </p>
 
-                  <div className="mt-4">
-                    <label htmlFor="plan" className="label-tech text-ink-3">
-                      Plan de pago
-                    </label>
-                    <Select
-                      id="plan"
-                      value={String(meses)}
-                      onChange={(e) => setMeses(Number(e.target.value))}
-                      className="mt-2"
+            {!agotado ? (
+              <>
+                <div className="mt-6">
+                  <span className="label-web block text-texto-4">Cantidad</span>
+                  <div className="mt-2 inline-flex h-11 items-center rounded-md border border-borde-2 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => setCantidad((c) => Math.max(1, c - 1))}
+                      aria-label="Quitar una unidad"
+                      className="inline-flex size-10 items-center justify-center rounded-l-md text-texto-2 transition-colors hover:bg-fondo-2 hover:text-texto"
                     >
-                      {config.mesesCredito.map((m) => (
-                        <option key={m} value={m}>
-                          {m === 0
-                            ? 'Contado'
-                            : m +
-                              ' cuotas de ' +
-                              new Intl.NumberFormat('es-GT', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }).format(total / m) +
-                              ' Q'}
-                        </option>
-                      ))}
-                    </Select>
-                    {meses > 0 ? (
-                      <p className="mt-1 text-[12px] text-brass-ink/80">
-                        Total con interés{' '}
-                        {new Intl.NumberFormat('es-GT', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }).format(total * (1 + (config.interesPct / 100) * (meses / 12))) +
-                          ' Q al ' +
-                          config.interesPct +
-                          '%'}
-                      </p>
-                    ) : null}
+                      <Minus className="size-4" aria-hidden />
+                    </button>
+                    <span className="w-12 text-center text-[15px] font-semibold tabular-nums">
+                      {cantidad}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCantidad((c) => Math.min(maximo, c + 1))}
+                      aria-label="Agregar una unidad"
+                      className="inline-flex size-10 items-center justify-center rounded-r-md text-texto-2 transition-colors hover:bg-fondo-2 hover:text-texto"
+                    >
+                      <Plus className="size-4" aria-hidden />
+                    </button>
                   </div>
+                </div>
 
-                  <div className="mt-4 flex items-baseline justify-between border-t border-rule pt-3">
-                    <span className="label-tech text-ink-3">Total</span>
-                    <Money valor={total} size="lg" />
-                  </div>
+                <div className="mt-6">
+                  <SelectorPlan
+                    base={subtotal}
+                    meses={meses}
+                    onChange={setMeses}
+                    interesPct={config.interesPct}
+                    opciones={config.mesesCredito}
+                  />
+                </div>
 
-                  <Button
-                    variante="primary"
-                    className="mt-4 w-full"
-                    onClick={() => {
-                      agregar(producto.id, cantidad)
-                      avisar(
-                        producto.nombre + ' × ' + cantidad + ' agregado al carrito.',
-                      )
-                    }}
-                  >
-                    <ShoppingBag className="size-3.5" aria-hidden />
-                    Agregar al carrito
-                  </Button>
+                <div className="mt-6 flex items-baseline justify-between border-t border-borde pt-4">
+                  <span className="label-web text-texto-4">Total</span>
+                  <Precio valor={total} tamano="md" />
+                </div>
 
-                  <a
-                    href={enlaceWhatsappTienda(
-                      config,
-                      'Hola, me interesa el ' +
-                        producto.nombre +
-                        ' (' +
-                        producto.sku +
-                        '). ¿Tienen disponibilidad?',
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="label-tech mt-2 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xs border border-rule-2 text-ink transition-colors hover:border-ink"
-                  >
-                    <MessageCircle className="size-3.5" aria-hidden />
-                    Consultar por WhatsApp
-                  </a>
-                </>
-              )}
-            </div>
+                <Boton
+                  variante="acento"
+                  className="mt-5 w-full"
+                  onClick={alAgregar}
+                >
+                  {agregado ? 'Agregado al carrito' : 'Agregar al carrito'}
+                </Boton>
+                <a
+                  href={consultar}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2.5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-borde-2 bg-white px-5 text-[13px] font-semibold text-texto transition-colors hover:border-texto"
+                >
+                  <MessageCircle className="size-4" aria-hidden />
+                  Consultar por WhatsApp
+                </a>
+              </>
+            ) : (
+              <a
+                href={consultar}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-texto px-5 text-[13px] font-semibold text-white"
+              >
+                <MessageCircle className="size-4" aria-hidden />
+                Avisame cuando entre
+              </a>
+            )}
+
+            <p className="mt-5 border-t border-borde pt-4 text-[12px] leading-relaxed text-texto-3">
+              Precios en quetzales con IVA incluido ({config.ivaPct}%). El pago
+              se coordina por WhatsApp: te confirmamos existencias y te
+              enviamos el resumen antes de cobrar.
+            </p>
           </div>
         </aside>
       </div>

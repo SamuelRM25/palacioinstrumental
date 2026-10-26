@@ -1,235 +1,228 @@
-import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { SearchX } from 'lucide-react'
-import { SearchInput, Select } from '../../components/ui/Field'
-import { Button } from '../../components/ui/Button'
-import { EmptyState } from '../../components/ui/EmptyState'
-import { FichaProducto } from '../../components/tienda/FichaProducto'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { ChevronRight, SearchX, SlidersHorizontal } from 'lucide-react'
 import { useCrm } from '../../store/crmStore'
 import { useCart } from '../../store/cartStore'
-import { useToast } from '../../components/ui/toastContext'
 import { CATEGORIAS } from '../../data/config'
-import type { CategoriaId } from '../../types'
+import { aplicarFiltros, type FiltrosCatalogo } from '../../lib/tienda'
+import { Aviso, Boton, Hoja } from '../../components/tienda/Piezas'
+import { PanelFiltros } from '../../components/tienda/PanelFiltros'
+import { BarraCatalogo } from '../../components/tienda/BarraCatalogo'
+import { FilaProducto, TarjetaProducto } from '../../components/tienda/TarjetaProducto'
+import { HeroCategoria } from '../../components/tienda/HeroCategoria'
 
-type Orden = 'destacados' | 'precio-asc' | 'precio-desc' | 'nombre' | 'nuevos'
-
-const RANGOS = [
-  { valor: 'todos', etiqueta: 'Cualquier precio', min: 0, max: Infinity },
-  { valor: 'hasta-500', etiqueta: 'Hasta Q500', min: 0, max: 500 },
-  { valor: '500-2000', etiqueta: 'Q500 – Q2,000', min: 500, max: 2000 },
-  { valor: '2000-5000', etiqueta: 'Q2,000 – Q5,000', min: 2000, max: 5000 },
-  { valor: '5000-10000', etiqueta: 'Q5,000 – Q10,000', min: 5000, max: 10000 },
-  { valor: 'mas-10000', etiqueta: 'Más de Q10,000', min: 10000, max: Infinity },
-]
-
-const ORDENES: { valor: Orden; etiqueta: string }[] = [
-  { valor: 'destacados', etiqueta: 'Destacados primero' },
-  { valor: 'precio-asc', etiqueta: 'Precio: menor a mayor' },
-  { valor: 'precio-desc', etiqueta: 'Precio: mayor a menor' },
-  { valor: 'nombre', etiqueta: 'Nombre (A–Z)' },
-  { valor: 'nuevos', etiqueta: 'Novedades' },
-]
+const POR_PAGINA = 24
 
 export default function TiendaCatalogo() {
-  const [params, setParams] = useSearchParams()
+  const config = useCrm((s) => s.config)
   const productos = useCrm((s) => s.productos)
   const agregar = useCart((s) => s.agregar)
-  const avisar = useToast().avisar
+  const [params, setParams] = useSearchParams()
 
-  const categoria = (params.get('categoria') ?? 'todas') as CategoriaId | 'todas'
+  const [vista, setVista] = useState<'cuadricula' | 'lista'>('cuadricula')
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
+  const [visibles, setVisibles] = useState(POR_PAGINA)
+
   const consulta = params.get('q') ?? ''
-  const soloDisponibles = params.get('solo') === 'disponibles'
-
-  const [busqueda, setBusqueda] = useState(consulta)
-  const [marca, setMarca] = useState('todas')
-  const [rango, setRango] = useState('todos')
-  const [orden, setOrden] = useState<Orden>('destacados')
-
-  const marcas = useMemo(
-    () => [...new Set(productos.map((p) => p.marca))].sort(),
-    [productos],
+  const filtros: FiltrosCatalogo = useMemo(
+    () => ({
+      familia: params.get('categoria') ?? 'todas',
+      marca: params.get('marca') ?? '',
+      rango: params.get('rango') ?? 'todos',
+      solo: params.get('solo') === 'disponibles',
+      orden: params.get('orden') ?? 'relevancia',
+    }),
+    [params],
   )
 
-  const filtrados = useMemo(() => {
-    const q = busqueda.trim().toLowerCase()
-    const limites = RANGOS.find((r) => r.valor === rango) ?? RANGOS[0]
-
-    const lista = productos.filter((p) => {
-      if (categoria !== 'todas' && p.categoria !== categoria) return false
-      if (marca !== 'todas' && p.marca !== marca) return false
-      if (p.precio < limites.min || p.precio > limites.max) return false
-      if (soloDisponibles && p.stock - p.reservado <= 0) return false
-      if (!q) return true
-      return (
-        p.nombre.toLowerCase().includes(q) ||
-        p.marca.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        p.specs.some((s) => s.valor.toLowerCase().includes(q))
-      )
-    })
-
-    switch (orden) {
-      case 'precio-asc':
-        return [...lista].sort((a, b) => a.precio - b.precio)
-      case 'precio-desc':
-        return [...lista].sort((a, b) => b.precio - a.precio)
-      case 'nombre':
-        return [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-      case 'nuevos':
-        return [...lista].sort(
-          (a, b) => Number(Boolean(b.nuevo)) - Number(Boolean(a.nuevo)),
-        )
-      default:
-        return [...lista].sort(
-          (a, b) => Number(Boolean(b.destacado)) - Number(Boolean(a.destacado)),
-        )
-    }
-  }, [productos, categoria, marca, rango, orden, busqueda, soloDisponibles])
-
-  const hayFiltros =
-    categoria !== 'todas' ||
-    marca !== 'todas' ||
-    rango !== 'todos' ||
-    busqueda !== '' ||
-    soloDisponibles
-
-  const limpiar = () => {
-    setParams(new URLSearchParams())
-    setBusqueda('')
-    setMarca('todas')
-    setRango('todos')
+  // Al cambiar cualquier filtro se vuelve a la primera página. Se ajusta
+  // durante el render en lugar de en un efecto: evita un segundo render.
+  const firma = `${filtros.familia}|${filtros.marca}|${filtros.rango}|${filtros.solo}|${filtros.orden}|${consulta}`
+  const [firmaPrevia, setFirmaPrevia] = useState(firma)
+  if (firma !== firmaPrevia) {
+    setFirmaPrevia(firma)
+    setVisibles(POR_PAGINA)
   }
 
-  const nombreCategoria =
-    CATEGORIAS.find((c) => c.id === categoria)?.nombre ?? 'Instrumentos'
+  const familiaActual = CATEGORIAS.find((c) => c.id === filtros.familia)
+  const resultados = useMemo(
+    () => aplicarFiltros(productos, filtros, consulta),
+    [productos, filtros, consulta],
+  )
+
+  useEffect(() => {
+    document.title = `${familiaActual?.nombre ?? 'Instrumentos'} · ${config.nombre}`
+  }, [familiaActual, config.nombre])
+
+  const cambiar = (cambio: Partial<FiltrosCatalogo>) => {
+    const siguiente = { ...filtros, ...cambio }
+    const nuevos = new URLSearchParams(params)
+    const escribir = (clave: string, valor: string | undefined) => {
+      if (!valor || valor === 'todas' || valor === '') nuevos.delete(clave)
+      else nuevos.set(clave, valor)
+    }
+    escribir('categoria', siguiente.familia)
+    escribir('marca', siguiente.marca)
+    escribir('rango', siguiente.rango)
+    escribir('solo', siguiente.solo ? 'disponibles' : undefined)
+    escribir('orden', siguiente.orden === 'relevancia' ? undefined : siguiente.orden)
+    setParams(nuevos, { replace: true })
+  }
+
+  const limpiar = () => {
+    const nuevos = new URLSearchParams()
+    if (consulta) nuevos.set('q', consulta)
+    setParams(nuevos, { replace: true })
+  }
+
+  const filtrosActivos =
+    (filtros.familia !== 'todas' ? 1 : 0) +
+    (filtros.marca ? 1 : 0) +
+    (filtros.rango !== 'todos' ? 1 : 0) +
+    (filtros.solo ? 1 : 0)
+
+  const panel = (
+    <PanelFiltros
+      productos={productos}
+      filtros={filtros}
+      onCambio={cambiar}
+      onLimpiar={limpiar}
+      ocultarFamilia={Boolean(familiaActual)}
+    />
+  )
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
-      <header>
-        <p className="label-tech text-oxblood">Catálogo</p>
-        <h1 className="mt-2 font-display text-[32px] leading-tight font-semibold tracking-tight text-ink">
-          {nombreCategoria}
-        </h1>
-        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-ink-3">
-          {filtrados.length} de {productos.length} referencias. Todos los
-          precios están en quetzales, con IVA incluido.
-        </p>
+    <div className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6 sm:py-10">
+      {/* Migas */}
+      <nav aria-label="Ruta" className="flex items-center gap-1.5 text-[12.5px] text-texto-4">
+        <Link to="/" className="hover:text-texto">
+          Inicio
+        </Link>
+        <ChevronRight className="size-3.5" aria-hidden />
+        <span className="text-texto-3">
+          {familiaActual ? familiaActual.nombre : 'Instrumentos'}
+        </span>
+      </nav>
+
+      {/* Encabezado */}
+      <header className="mt-5 flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <h1 className="font-sora text-[30px] leading-tight font-extrabold tracking-tight sm:text-[38px]">
+            {familiaActual?.nombre ?? 'Instrumentos'}
+          </h1>
+          <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-texto-3">
+            {consulta
+              ? `Resultados para “${consulta}”. `
+              : ''}
+            {resultados.length} de {productos.length} referencias. Todos los
+            precios están en quetzales, con IVA incluido.
+          </p>
+        </div>
       </header>
 
-      {/* Filtros */}
-      <div className="mt-7 flex flex-wrap items-center gap-2 border-y border-rule py-3">
-        <SearchInput
-          etiqueta="Buscar por nombre, marca o referencia"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="min-w-52 flex-1 sm:max-w-72"
-        />
-
-        <div className="w-44">
-          <Select
-            aria-label="Filtrar por familia"
-            value={categoria}
-            onChange={(e) => {
-              const p = new URLSearchParams(params)
-              if (e.target.value === 'todas') p.delete('categoria')
-              else p.set('categoria', e.target.value)
-              setParams(p, { replace: true })
-            }}
-          >
-            <option value="todas">Todas las familias</option>
-            {CATEGORIAS.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </Select>
+      {/* Portada de familia */}
+      {familiaActual ? (
+        <div className="mt-8">
+          <HeroCategoria familia={familiaActual} total={resultados.length} />
         </div>
+      ) : null}
 
-        <div className="w-40">
-          <Select
-            aria-label="Filtrar por marca"
-            value={marca}
-            onChange={(e) => setMarca(e.target.value)}
-          >
-            <option value="todas">Todas las marcas</option>
-            {marcas.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <div className="w-44">
-          <Select
-            aria-label="Filtrar por precio"
-            value={rango}
-            onChange={(e) => setRango(e.target.value)}
-          >
-            {RANGOS.map((r) => (
-              <option key={r.valor} value={r.valor}>
-                {r.etiqueta}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <Button
-          variante={soloDisponibles ? 'primary' : 'secondary'}
-          onClick={() => {
-            const p = new URLSearchParams(params)
-            if (soloDisponibles) p.delete('solo')
-            else p.set('solo', 'disponibles')
-            setParams(p, { replace: true })
-          }}
-        >
-          Solo disponibles
-        </Button>
-
-        <div className="flex items-center gap-2">
-          <div className="w-48">
-            <Select
-              aria-label="Ordenar resultados"
-              value={orden}
-              onChange={(e) => setOrden(e.target.value as Orden)}
-            >
-              {ORDENES.map((o) => (
-                <option key={o.valor} value={o.valor}>
-                  {o.etiqueta}
-                </option>
-              ))}
-            </Select>
+      <div className="mt-8 grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
+        {/* Filtros */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-40">
+            <p className="label-web border-b border-borde pb-3 text-texto">
+              Filtros
+            </p>
+            {panel}
           </div>
-          {hayFiltros ? (
-            <Button variante="ghost" onClick={limpiar}>
-              Limpiar
-            </Button>
+        </aside>
+
+        {/* Resultados */}
+        <div>
+          <BarraCatalogo
+            total={resultados.length}
+            mostrados={Math.min(visibles, resultados.length)}
+            orden={filtros.orden}
+            onOrden={(orden) => cambiar({ orden })}
+            vista={vista}
+            onVista={setVista}
+            onAbrirFiltros={() => setFiltrosAbiertos(true)}
+            filtrosActivos={filtrosActivos}
+          />
+
+          {resultados.length === 0 ? (
+            <div className="mt-8">
+              <Aviso
+                titulo="Ningún artículo coincide"
+                texto="Probá con menos filtros o con otro término de búsqueda. En el local tenemos más de lo que aparece en pantalla."
+                icono={<SearchX className="size-6" aria-hidden />}
+                accion={
+                  <Boton variante="secundario" onClick={limpiar}>
+                    Limpiar filtros
+                  </Boton>
+                }
+              />
+            </div>
+          ) : vista === 'cuadricula' ? (
+            <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              {resultados.slice(0, visibles).map((producto) => (
+                <li key={producto.id}>
+                  <TarjetaProducto
+                    producto={producto}
+                    onAgregar={(p) => agregar(p.id)}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul className="mt-2">
+              {resultados.slice(0, visibles).map((producto) => (
+                <li key={producto.id}>
+                  <FilaProducto
+                    producto={producto}
+                    onAgregar={(p) => agregar(p.id)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {visibles < resultados.length ? (
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <Boton variante="secundario" onClick={() => setVisibles((v) => v + POR_PAGINA)}>
+                Ver más artículos ({resultados.length - visibles} restantes)
+              </Boton>
+              <p className="label-web text-texto-4">
+                Mostrando {Math.min(visibles, resultados.length)} de {resultados.length}
+              </p>
+            </div>
           ) : null}
         </div>
       </div>
 
-      {/* Resultados */}
-      {filtrados.length === 0 ? (
-        <EmptyState
-          titulo="Ningún artículo coincide"
-          descripcion="Probá con otra palabra, otra familia o quitá los filtros de precio."
-          icono={<SearchX className="size-5" />}
-          accion={{ etiqueta: 'Limpiar filtros', onClick: limpiar }}
-        />
-      ) : (
-        <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtrados.map((p) => (
-            <FichaProducto
-              key={p.id}
-              producto={p}
-              onAgregar={(prod) => {
-                agregar(prod.id)
-                avisar(`${prod.nombre} agregado al carrito.`)
-              }}
-            />
-          ))}
+      {/* Filtros en móvil */}
+      <Hoja
+        abierto={filtrosAbiertos}
+        onCerrar={() => setFiltrosAbiertos(false)}
+        titulo="Filtros"
+        pie={
+          <div className="flex gap-3">
+            <Boton variante="secundario" className="flex-1" onClick={limpiar}>
+              Limpiar
+            </Boton>
+            <Boton variante="primario" className="flex-1" onClick={() => setFiltrosAbiertos(false)}>
+              Ver {resultados.length} artículos
+            </Boton>
+          </div>
+        }
+      >
+        <div className="flex items-center gap-2 pb-3 text-[13px] font-semibold text-texto">
+          <SlidersHorizontal className="size-4" aria-hidden />
+          Afinar resultados
         </div>
-      )}
+        {panel}
+      </Hoja>
     </div>
   )
 }

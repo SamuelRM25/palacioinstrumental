@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MessageCircle, ShoppingBag, Trash2 } from 'lucide-react'
-import { IconButton } from '../../components/ui/Button'
-import { Money } from '../../components/ui/Money'
-import { Badge } from '../../components/ui/Badge'
-import { EmptyState } from '../../components/ui/EmptyState'
-import { Select } from '../../components/ui/Field'
-import { InstrumentIcon } from '../../components/brand/InstrumentIcon'
+import {
+  ArrowLeft,
+  MessageCircle,
+  Minus,
+  Plus,
+  ShoppingBag,
+  Trash2,
+} from 'lucide-react'
 import { useCrm } from '../../store/crmStore'
 import { useCart } from '../../store/cartStore'
-import { useToast } from '../../components/ui/toastContext'
+import { moneda, monedaCorta } from '../../lib/format'
+import { totalConInteres } from '../../lib/tienda'
 import { enlaceWhatsappTienda } from '../../lib/whatsapp'
-import type { Producto } from '../../types'
+import { Aviso, Etiqueta, ImagenProducto, Precio } from '../../components/tienda/Piezas'
+import { SelectorPlan } from '../../components/tienda/SelectorPlan'
 
 export default function TiendaCarrito() {
   const config = useCrm((s) => s.config)
@@ -20,279 +23,301 @@ export default function TiendaCarrito() {
   const cambiar = useCart((s) => s.cambiar)
   const quitar = useCart((s) => s.quitar)
   const vaciar = useCart((s) => s.vaciar)
-  const avisar = useToast().avisar
+
   const [meses, setMeses] = useState(0)
+  const [entrega, setEntrega] = useState<'local' | 'interior'>('local')
 
-  const items = useMemo(() => {
-    const salida: { producto: Producto; cantidad: number }[] = []
-    for (const linea of lineas) {
-      const producto = productos.find((p) => p.id === linea.productoId)
-      if (producto) salida.push({ producto, cantidad: linea.cantidad })
-    }
-    return salida
-  }, [lineas, productos])
+  const detalle = useMemo(
+    () =>
+      lineas
+        .map((linea) => ({
+          linea,
+          producto: productos.find((p) => p.id === linea.productoId),
+        }))
+        .filter((x) => x.producto),
+    [lineas, productos],
+  )
 
-  const subtotal = items.reduce(
-    (a, i) => a + i.producto.precio * i.cantidad,
+  const unidades = detalle.reduce((total, x) => total + x.linea.cantidad, 0)
+  const subtotal = detalle.reduce(
+    (total, x) => total + (x.producto?.precio ?? 0) * x.linea.cantidad,
     0,
   )
-  const unidades = items.reduce((a, i) => a + i.cantidad, 0)
 
+  // Gratis en la capital desde cierto monto; al interior siempre aplica la
+  // tarifa nacional (es lo que promete la portada).
   const envio =
     subtotal === 0
       ? 0
-      : subtotal >= config.envioGratisDesde
-        ? 0
-        : config.envioLocal
-  const total = subtotal + envio
+      : entrega === 'interior'
+        ? config.envioNacional
+        : subtotal >= config.envioGratisDesde
+          ? 0
+          : config.envioLocal
 
-  const mensaje = () => {
-    const detalle = items
-      .map(
-        (i) =>
-          `• ${i.producto.nombre} (${i.producto.sku}) × ${i.cantidad} — ${new Intl.NumberFormat('es-GT', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(i.producto.precio * i.cantidad)} Q`,
-      )
-      .join('\n')
-    const plan =
-      meses === 0
-        ? 'Contado'
-        : `${meses} cuotas de ${new Intl.NumberFormat('es-GT', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(total / meses)} Q`
-    return [
-      `Hola ${config.nombre}, quiero confirmar este pedido:`,
-      '',
-      detalle,
-      '',
-      `*Total: ${new Intl.NumberFormat('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(total)} Q*`,
-      `Plan de pago: ${plan}`,
-      envio === 0 ? 'Envío sin costo' : `Envío: ${envio} Q`,
-      '',
-      'Quedo al pendiente de confirmar disponibilidad.',
-    ].join('\n')
-  }
+  const total = totalConInteres(subtotal + envio, meses, config.interesPct)
 
-  if (items.length === 0) {
+  if (detalle.length === 0) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
-        <EmptyState
+      <div className="mx-auto max-w-[1360px] px-4 py-16 sm:px-6 sm:py-24">
+        <Aviso
           titulo="Tu carrito está vacío"
-          descripcion="Todavía no agregaste nada. Podés empezar por los instrumentos más solicitados o por una familia completa."
-          icono={<ShoppingBag className="size-5" />}
-          accion={{
-            etiqueta: 'Ver el catálogo',
-            onClick: () => {
-              window.location.href = '/catalogo'
-            },
-          }}
+          texto="Todavía no agregaste nada. Mirá el catálogo y encontrá el instrumento que estabas buscando."
+          icono={<ShoppingBag className="size-6" aria-hidden />}
+          accion={
+            <Link
+              to="/catalogo"
+              className="inline-flex h-11 items-center gap-2 rounded-md bg-texto px-5 text-[13px] font-semibold text-white"
+            >
+              Ver el catálogo
+              <ArrowLeft className="size-4" aria-hidden />
+            </Link>
+          }
         />
       </div>
     )
   }
 
+  const mensaje = enlaceWhatsappTienda(
+    config,
+    [
+      `Hola ${config.nombre}, quiero confirmar este pedido:`,
+      '',
+      ...detalle.map(
+        (x) =>
+          `• ${x.producto?.nombre} (${x.producto?.sku}) x${x.linea.cantidad} — ${moneda((x.producto?.precio ?? 0) * x.linea.cantidad)}`,
+      ),
+      '',
+      `*Total: ${moneda(total)}*`,
+      `Plan de pago: ${meses === 0 ? 'Contado' : `${meses} cuotas de ${moneda(total / meses)}`}`,
+      envio > 0 ? `Envío: ${moneda(envio)}` : 'Envío sin costo',
+      entrega === 'local' ? 'Entrega en el local de Zona 1' : 'Envío al interior del país',
+      '',
+      'Quedo al pendiente de confirmar disponibilidad.',
+    ].join('\n'),
+  )
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
-      <header>
-        <p className="label-tech text-oxblood">Pedido</p>
-        <h1 className="mt-2 font-display text-[32px] leading-tight font-semibold tracking-tight text-ink">
-          Carrito
-        </h1>
-        <p className="mt-2 text-[13.5px] text-ink-3">
-          {unidades} {unidades === 1 ? 'artículo' : 'artículos'} ·{' '}
-          {items.length} {items.length === 1 ? 'referencia' : 'referencias'}
-        </p>
+    <div className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6 sm:py-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <Etiqueta className="text-acento-2">Pedido</Etiqueta>
+          <h1 className="mt-2 font-sora text-[30px] leading-tight font-extrabold tracking-tight sm:text-[38px]">
+            Carrito
+          </h1>
+          <p className="mt-2 text-[14px] text-texto-3">
+            {unidades} {unidades === 1 ? 'artículo' : 'artículos'} ·{' '}
+            {detalle.length}{' '}
+            {detalle.length === 1 ? 'referencia' : 'referencias'}
+          </p>
+        </div>
+        <Link
+          to="/catalogo"
+          className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-texto-2 hover:text-acento-2"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          Seguir comprando
+        </Link>
       </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-10">
-        {/* Líneas */}
-        <ul className="border-t border-ink">
-          {items.map(({ producto, cantidad }) => {
-            const disponible = producto.stock - producto.reservado
-            const excede = cantidad > disponible
-            return (
-              <li
-                key={producto.id}
-                className="flex flex-wrap items-start gap-4 border-b border-rule py-4"
-              >
-                <Link
-                  to={`/producto/${producto.id}`}
-                  className="flex size-14 shrink-0 items-center justify-center border border-rule bg-paper-2 text-ink-4 transition-colors hover:border-ink-3"
+      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-14">
+        {/* ── Líneas ───────────────────────────────────────────── */}
+        <div>
+          <ul className="border-t border-borde">
+            {detalle.map(({ linea, producto }) => {
+              if (!producto) return null
+              const maximo = Math.max(
+                1,
+                producto.stock - producto.reservado,
+              )
+              return (
+                <li
+                  key={linea.productoId}
+                  className="flex flex-wrap items-start gap-4 border-b border-borde py-5 sm:gap-5"
                 >
-                  <InstrumentIcon categoria={producto.categoria} className="size-8" />
-                </Link>
+                  <Link
+                    to={`/producto/${producto.id}`}
+                    className="size-20 shrink-0 overflow-hidden rounded-lg bg-fondo-2 sm:size-24"
+                    tabIndex={-1}
+                    aria-hidden
+                  >
+                    <ImagenProducto producto={producto} />
+                  </Link>
 
-                <div className="min-w-0 flex-1">
-                  <p className="label-tech text-ink-4">{producto.marca}</p>
-                  <p className="mt-0.5 text-[14px] leading-snug font-semibold text-ink">
-                    <Link to={`/producto/${producto.id}`} className="hover:underline hover:underline-offset-2">
-                      {producto.nombre}
-                    </Link>
-                  </p>
-                  <p className="label-mono mt-0.5 text-ink-4">{producto.sku}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="label-web text-texto-4">{producto.marca}</p>
+                    <h2 className="mt-1 text-[15px] font-semibold">
+                      <Link
+                        to={`/producto/${producto.id}`}
+                        className="transition-colors hover:text-acento-2"
+                      >
+                        {producto.nombre}
+                      </Link>
+                    </h2>
+                    <p className="codigo-web mt-1 text-texto-4">{producto.sku}</p>
 
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <span className="inline-flex h-8 items-center rounded-xs border border-rule-2 bg-paper">
+                    {linea.cantidad > maximo ? (
+                      <p className="mt-2 text-[12.5px] text-alerta">
+                        Sólo quedan {maximo} disponibles. Ajustamos la cantidad
+                        al confirmar.
+                      </p>
+                    ) : null}
+
+                    <div className="mt-3 inline-flex h-10 items-center rounded-md border border-borde-2">
                       <button
                         type="button"
-                        aria-label={`Quitar una unidad de ${producto.nombre}`}
-                        onClick={() => cambiar(producto.id, cantidad - 1)}
-                        className="flex h-8 w-8 items-center justify-center text-ink-3 transition-colors hover:text-ink"
+                        onClick={() => cambiar(linea.productoId, linea.cantidad - 1)}
+                        aria-label="Quitar una unidad"
+                        className="inline-flex size-9 items-center justify-center rounded-l-md text-texto-2 transition-colors hover:bg-fondo-2 hover:text-texto"
                       >
-                        −
+                        <Minus className="size-3.5" aria-hidden />
                       </button>
-                      <span className="w-8 text-center font-mono text-[13px] text-ink">
-                        {cantidad}
+                      <span className="w-10 text-center text-[14px] font-semibold tabular-nums">
+                        {linea.cantidad}
                       </span>
                       <button
                         type="button"
-                        aria-label={`Agregar una unidad de ${producto.nombre}`}
-                        onClick={() => cambiar(producto.id, cantidad + 1)}
-                        className="flex h-8 w-8 items-center justify-center text-ink-3 transition-colors hover:text-ink"
+                        onClick={() => cambiar(linea.productoId, Math.min(maximo, linea.cantidad + 1))}
+                        disabled={linea.cantidad >= maximo}
+                        aria-label="Agregar una unidad"
+                        className="inline-flex size-9 items-center justify-center rounded-r-md text-texto-2 transition-colors hover:bg-fondo-2 hover:text-texto disabled:cursor-not-allowed disabled:opacity-35"
                       >
-                        +
+                        <Plus className="size-3.5" aria-hidden />
                       </button>
-                    </span>
-
-                    <span className="label-mono text-ink-4">
-                      {new Intl.NumberFormat('es-GT', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(producto.precio)}{' '}
-                      Q c/u
-                    </span>
-
-                    <IconButton
-                      etiqueta={`Quitar ${producto.nombre} del carrito`}
-                      onClick={() => {
-                        quitar(producto.id)
-                        avisar(`${producto.nombre} quitado del carrito.`)
-                      }}
-                      className="hover:text-oxblood"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </IconButton>
+                    </div>
                   </div>
 
-                  {excede ? (
-                    <p className="mt-2 text-[11.5px] text-oxblood">
-                      Sólo quedan {disponible} disponibles. Te ajustamos la
-                      cantidad al confirmar.
-                    </p>
-                  ) : null}
-                </div>
+                  <div className="flex w-full shrink-0 items-center justify-between gap-4 sm:w-auto sm:flex-col sm:items-end">
+                    <button
+                      type="button"
+                      onClick={() => quitar(linea.productoId)}
+                      aria-label={`Quitar ${producto.nombre} del carrito`}
+                      className="inline-flex size-9 items-center justify-center rounded-md text-texto-4 transition-colors hover:bg-alerta-2 hover:text-alerta"
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                    </button>
+                    <Precio
+                      valor={producto.precio * linea.cantidad}
+                      tamano="md"
+                      className="sm:order-first"
+                    />
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
 
-                <div className="shrink-0 text-right">
-                  <Money valor={producto.precio * cantidad} size="md" />
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+          <button
+            type="button"
+            onClick={vaciar}
+            className="mt-4 text-[13px] font-semibold text-texto-4 underline underline-offset-4 transition-colors hover:text-alerta"
+          >
+            Vaciar el carrito
+          </button>
+        </div>
 
-        {/* Totales */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="border border-ink bg-paper-2">
-            <div className="border-b border-ink px-4 py-3">
-              <p className="label-tech text-ink">Resumen</p>
-            </div>
+        {/* ── Resumen ─────────────────────────────────────────── */}
+        <aside className="lg:sticky lg:top-40 lg:self-start">
+          <div className="rounded-2xl border border-borde bg-fondo-2 p-6">
+            <h2 className="font-sora text-[17px] font-bold">Resumen</h2>
 
-            <dl className="flex flex-col gap-2 px-4 py-4">
-              <div className="flex items-center justify-between">
-                <dt className="text-[13px] text-ink-3">Subtotal</dt>
-                <dd>
-                  <Money valor={subtotal} size="sm" />
+            <dl className="mt-5 space-y-3">
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-[13.5px] text-texto-3">
+                  Subtotal ({unidades} art.)
+                </dt>
+                <dd className="text-[14px] font-medium tabular-nums">
+                  {moneda(subtotal)}
                 </dd>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-[13px] text-ink-3">Envío</dt>
-                <dd>
+
+              <div>
+                <dt className="text-[13.5px] text-texto-3">Entrega</dt>
+                <dd className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEntrega('local')}
+                    aria-pressed={entrega === 'local'}
+                    className={`rounded-md border px-3 py-2.5 text-left text-[12.5px] transition-colors ${
+                      entrega === 'local'
+                        ? 'border-acento bg-acento-3 font-semibold text-texto'
+                        : 'border-borde-2 bg-white text-texto-2 hover:border-texto-4'
+                    }`}
+                  >
+                    En el local
+                    <span className="block text-[11.5px] font-normal text-texto-4">
+                      Zona 1 · {config.envioLocal === 0 ? 'sin costo' : monedaCorta(config.envioLocal)}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEntrega('interior')}
+                    aria-pressed={entrega === 'interior'}
+                    className={`rounded-md border px-3 py-2.5 text-left text-[12.5px] transition-colors ${
+                      entrega === 'interior'
+                        ? 'border-acento bg-acento-3 font-semibold text-texto'
+                        : 'border-borde-2 bg-white text-texto-2 hover:border-texto-4'
+                    }`}
+                  >
+                    Al interior
+                    <span className="block text-[11.5px] font-normal text-texto-4">
+                      Envío · {monedaCorta(config.envioNacional)}
+                    </span>
+                  </button>
+                </dd>
+              </div>
+
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-[13.5px] text-texto-3">Envío</dt>
+                <dd className="text-[14px] font-medium tabular-nums">
                   {envio === 0 ? (
-                    <span className="label-mono text-pine">Sin costo</span>
+                    <span className="text-ok">Sin costo</span>
                   ) : (
-                    <Money valor={envio} size="sm" />
+                    moneda(envio)
                   )}
                 </dd>
               </div>
-            </dl>
 
-            <div className="flex items-end justify-between border-t border-rule px-4 py-3">
-              <span className="label-tech text-ink">Total</span>
-              <Money valor={total} size="lg" />
-            </div>
-
-            <div className="border-t border-rule px-4 py-3">
-              <label htmlFor="plan" className="label-tech text-ink-3">
-                ¿Cómo querés pagar?
-              </label>
-              <Select
-                id="plan"
-                value={String(meses)}
-                onChange={(e) => setMeses(Number(e.target.value))}
-                className="mt-2"
-              >
-                {config.mesesCredito.map((m) => (
-                  <option key={m} value={m}>
-                    {m === 0
-                      ? 'Contado'
-                      : `${m} cuotas de ${new Intl.NumberFormat('es-GT', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }).format(total / m)} Q`}
-                  </option>
-                ))}
-              </Select>
-              {meses > 0 ? (
-                <p className="label-mono mt-2 text-ink-4">
-                  Total con interés{' '}
-                  {new Intl.NumberFormat('es-GT', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(total * (1 + (config.interesPct / 100) * (meses / 12)))}{' '}
-                  Q al {config.interesPct}%
+              {entrega === 'local' && envio > 0 && subtotal < config.envioGratisDesde ? (
+                <p className="rounded-md bg-white px-3 py-2 text-[12px] text-texto-3">
+                  Te faltan{' '}
+                  {monedaCorta(config.envioGratisDesde - subtotal)} para que el
+                  envío salga gratis.
                 </p>
               ) : null}
+            </dl>
+
+            <div className="mt-6">
+              <SelectorPlan
+                base={subtotal + envio}
+                meses={meses}
+                onChange={setMeses}
+                interesPct={config.interesPct}
+                opciones={config.mesesCredito}
+              />
             </div>
 
-            <div className="border-t border-rule px-4 py-3">
-              <a
-                href={enlaceWhatsappTienda(config, mensaje())}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="label-tech inline-flex h-10 w-full items-center justify-center gap-2 rounded-xs bg-oxblood px-4 text-paper transition-colors hover:bg-oxblood-hi"
-              >
-                <MessageCircle className="size-3.5" aria-hidden />
-                Confirmar por WhatsApp
-              </a>
-              <p className="mt-2 text-[11.5px] leading-relaxed text-ink-4">
-                Te enviamos el resumen del pedido con los precios y el plan de
-                pago. Confirmamos disponibilidad y acordamos la entrega.
-              </p>
-              <div className="mt-3 flex items-center justify-between border-t border-rule pt-3">
-                <Badge tono="muted">Envío gratis desde Q1,500</Badge>
-                <button
-                  type="button"
-                  onClick={() => {
-                    vaciar()
-                    avisar('Carrito vacío.')
-                  }}
-                  className="label-tech text-ink-4 transition-colors hover:text-oxblood"
-                >
-                  Vaciar
-                </button>
-              </div>
+            <div className="mt-6 flex items-baseline justify-between border-t border-borde pt-4">
+              <span className="label-web text-texto-4">Total</span>
+              <Precio valor={total} tamano="lg" />
             </div>
+
+            <a
+              href={mensaje}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-acento px-5 text-[13.5px] font-bold text-texto transition-colors hover:bg-acento-2 hover:text-white"
+            >
+              <MessageCircle className="size-4.5" aria-hidden />
+              Confirmar por WhatsApp
+            </a>
+
+            <p className="mt-4 border-t border-borde pt-4 text-[12px] leading-relaxed text-texto-3">
+              Te enviamos el resumen del pedido con precios, plan de pago y
+              envío ya resueltos. Un asesor confirma existencias y coordina la
+              entrega. No se cobra nada en esta página.
+            </p>
           </div>
-
-          <Link
-            to="/catalogo"
-            className="label-tech mt-4 inline-flex items-center gap-1.5 text-ink-3 transition-colors hover:text-oxblood"
-          >
-            ← Seguir comprando
-          </Link>
         </aside>
       </div>
     </div>
